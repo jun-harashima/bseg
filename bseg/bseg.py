@@ -1,3 +1,7 @@
-# -*- coding: utf-8 -*-
+class Bseg:
 
-"""Main module."""
+    def __init__(self):
+        pass
+
+    def segment(self, analysis_result):
+        return []
