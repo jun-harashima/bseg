@@ -1,34 +1,20 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Tests for `bseg` package."""
-
-
 import unittest
-from click.testing import CliRunner
-
-from bseg import bseg
-from bseg import cli
+from bseg.bseg import Bseg
 
 
 class TestBseg(unittest.TestCase):
-    """Tests for `bseg` package."""
 
-    def setUp(self):
-        """Set up test fixtures, if any."""
+    def test_segment(self):
+        analysis_result = """
+        今日	名詞,副詞可能,*,*,*,*,今日,キョウ,キョー
+        は	助詞,係助詞,*,*,*,*,は,ハ,ワ
+        天気	名詞,一般,*,*,*,*,天気,テンキ,テンキ
+        が	助詞,格助詞,一般,*,*,*,が,ガ,ガ
+        良い	形容詞,自立,*,*,形容詞・アウオ段,基本形,良い,ヨイ,ヨイ
+        。	記号,句点,*,*,*,*,。,。,。
+        EOS
+        """
 
-    def tearDown(self):
-        """Tear down test fixtures, if any."""
-
-    def test_000_something(self):
-        """Test something."""
-
-    def test_command_line_interface(self):
-        """Test the CLI."""
-        runner = CliRunner()
-        result = runner.invoke(cli.main)
-        assert result.exit_code == 0
-        assert 'bseg.cli.main' in result.output
-        help_result = runner.invoke(cli.main, ['--help'])
-        assert help_result.exit_code == 0
-        assert '--help  Show this message and exit.' in help_result.output
+        bseg = Bseg()
+        bnsts = bseg.segment(analysis_result)
+        self.assertEqual(bnsts, [])
