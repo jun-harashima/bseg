@@ -20,7 +20,15 @@ class TestBseg(unittest.TestCase):
         bnsts = bseg.segment(self.analysis_result)
         self.assertEqual(bnsts, [])
 
-    def test__transform(self):
+    def test__generate_morphology_from(self):
         bseg = Bseg()
-        words = bseg._transform(self.analysis_result)
-        self.assertEqual(words[0].surface, "今日")
+        morps = bseg._generate_morphology_from(self.analysis_result)
+        self.assertEqual(morps[0].surface, "今日")
+
+    def test__generate_bunsetsu_from(self):
+        bseg = Bseg()
+        morps = bseg._generate_morphology_from(self.analysis_result)
+        bnsts = bseg._generate_bunsetsu_from(morps)
+        self.assertEqual(bnsts[0].surface, "今日は")
+        self.assertEqual(bnsts[1].surface, "天気が")
+        self.assertEqual(bnsts[2].surface, "良い。")
