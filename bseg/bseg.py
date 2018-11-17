@@ -8,18 +8,14 @@ class Bseg:
         pass
 
     def segment(self, analysis_result):
-        morps = self._generate_morphology_from(analysis_result)
-        bnsts = self._generate_bunsetsu_from(morps)
-        return []
+        morps = self._construct_morphology_from(analysis_result)
+        bnsts = self._construct_bunsetsu_from(morps)
+        return bnsts
 
-    def _generate_morphology_from(self, analysis_result):
-        morps = []
-        for line in analysis_result.split("\n"):
-            morp = Morphology(line)
-            morps.append(morp)
-        return morps
+    def _construct_morphology_from(self, analysis_result):
+        return [Morphology(line) for line in analysis_result.split("\n")]
 
-    def _generate_bunsetsu_from(self, morps):
+    def _construct_bunsetsu_from(self, morps):
         bnsts = []
         _morps = []
         for morp in morps:

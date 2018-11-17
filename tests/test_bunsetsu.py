@@ -1,5 +1,4 @@
 import unittest
-import textwrap
 from bseg.morphology import Morphology
 from bseg.bunsetsu import Bunsetsu
 
