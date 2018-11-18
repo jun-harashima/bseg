@@ -13,3 +13,6 @@ class Morphology:
         self.base_form = features[6]
         self.reading = features[7]
         self.pronunciation = features[8]
+
+    def isfunction(self):
+        return self.part_of_speech in ["助詞", "記号"]

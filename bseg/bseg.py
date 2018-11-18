@@ -20,7 +20,7 @@ class Bseg:
         _morps = []
         for morp in morps:
             _morps.append(morp)
-            if morp.part_of_speech == "助詞":
+            if morp.isfunction():
                 bnst = Bunsetsu(_morps)
                 bnsts.append(bnst)
                 _morps = []
