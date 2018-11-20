@@ -9,29 +9,33 @@ bseg
 .. image:: https://img.shields.io/travis/jun-harashima/bseg.svg
         :target: https://travis-ci.org/jun-harashima/bseg
 
-.. image:: https://readthedocs.org/projects/bseg/badge/?version=latest
-        :target: https://bseg.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
+bseg is a tool for segmenting ipadic-based analysis results into bunsetsu.
 
+Quick Start
+===========
 
+To install bseg, run this command in your terminal:
 
+.. code-block:: bash
 
-Python Boilerplate contains all the boilerplate you need to create a Python package.
+   $ pip install bseg
 
+Using bseg, you can segment ipadic-based analysis results into bunsetsu as follows:
 
-* Free software: MIT license
-* Documentation: https://bseg.readthedocs.io.
+.. code-block:: python
 
+   import textwrap
+   from bseg.bseg import Bseg
 
-Features
---------
+   analysis_result = textwrap.dedent("""
+   今日	名詞,副詞可能,*,*,*,*,今日,キョウ,キョー
+   は	助詞,係助詞,*,*,*,*,は,ハ,ワ
+   天気	名詞,一般,*,*,*,*,天気,テンキ,テンキ
+   が	助詞,格助詞,一般,*,*,*,が,ガ,ガ
+   良い	形容詞,自立,*,*,形容詞・アウオ段,基本形,良い,ヨイ,ヨイ
+   。	記号,句点,*,*,*,*,。,。,。
+   """)[1:-1]
 
-* TODO
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+   bseg = Bseg()
+   bnsts = bseg.segment(analysis_result)
+   print(bnsts[0].surface)  # => 今日は
