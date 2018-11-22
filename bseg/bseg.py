@@ -20,10 +20,11 @@ class Bseg:
         _morps = []
         for morp in morps:
             _morps.append(morp)
-            if morp.isfunction():
-                bnst = Bunsetsu(_morps)
-                bnsts.append(bnst)
-                _morps = []
+            if not morp.isfunction():
+                continue
+            bnst = Bunsetsu(_morps)
+            bnsts.append(bnst)
+            _morps = []
         bnst = Bunsetsu(_morps)
         bnsts.append(bnst)
         return bnsts
