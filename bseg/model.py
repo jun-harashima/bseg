@@ -37,6 +37,10 @@ class Model(nn.Module):
 
         self.hidden = self.init_hidden()
 
+    def prepare_sequence_for(self, sentence, word_to_index):
+        indexes = [word_to_index[word] for word in sentence]
+        return torch.tensor(indexes, dtype=torch.long)
+
     def argmax(self, vec):
         # return the argmax as a python int
         _, idx = torch.max(vec, 1)
