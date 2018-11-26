@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.optim as optim
 
 
 torch.manual_seed(1)
@@ -10,15 +11,16 @@ class Model(nn.Module):
     START_TAG = "<START>"
     STOP_TAG = "<STOP>"
 
-    def __init__(self, vocab_size, tag_to_ix, embedding_dim, hidden_dim):
+    def __init__(self, word_to_index, tag_to_index, embedding_dim, hidden_dim):
         super(Model, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
-        self.vocab_size = vocab_size
-        self.tag_to_ix = tag_to_ix
-        self.tagset_size = len(tag_to_ix)
+        self.word_to_index = word_to_index
+        self.vocab_size = len(word_to_index)
+        self.tag_to_index = tag_to_index
+        self.tagset_size = len(tag_to_index)
 
-        self.word_embeds = nn.Embedding(vocab_size, embedding_dim)
+        self.word_embeds = nn.Embedding(len(word_to_index), embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim // 2,
                             num_layers=1, bidirectional=True)
 
@@ -32,13 +34,34 @@ class Model(nn.Module):
 
         # These two statements enforce the constraint that we never transfer
         # to the start tag and we never transfer from the stop tag
-        self.transitions.data[tag_to_ix[self.START_TAG], :] = -10000
-        self.transitions.data[:, tag_to_ix[self.STOP_TAG]] = -10000
+        self.transitions.data[tag_to_index[self.START_TAG], :] = -10000
+        self.transitions.data[:, tag_to_index[self.STOP_TAG]] = -10000
 
         self.hidden = self.init_hidden()
 
-    def prepare_sequence_for(self, sentence, word_to_index):
-        indexes = [word_to_index[word] for word in sentence]
+    def train(self, training_data):
+        optimizer = optim.SGD(self.parameters(), lr=0.01, weight_decay=1e-4)
+        for epoch in range(300):  # normally you would NOT do 300 epochs
+            for words, tags in training_data:
+                # Step 1. Remember that Pytorch accumulates gradients.
+                # We need to clear them out before each instance
+                self.zero_grad()
+
+                # Step 2. Get our inputs ready for the network, that is,
+                # turn them into Tensors of word indices.
+                word_indexes = self.degitize(words, self.word_to_index)
+                tag_indexes = self.degitize(tags, self.tag_to_index)
+
+                # Step 3. Run our forward pass.
+                loss = self.neg_log_likelihood(word_indexes, tag_indexes)
+
+                # Step 4. Compute the loss, gradients, and update the
+                # parameters by calling optimizer.step()
+                loss.backward()
+                optimizer.step()
+
+    def degitize(self, tokens, token_to_index):
+        indexes = [token_to_index[token] for token in tokens]
         return torch.tensor(indexes, dtype=torch.long)
 
     def argmax(self, vec):
@@ -61,7 +84,7 @@ class Model(nn.Module):
         # Do the forward algorithm to compute the partition function
         init_alphas = torch.full((1, self.tagset_size), -10000.)
         # START_TAG has all of the score.
-        init_alphas[0][self.tag_to_ix[self.START_TAG]] = 0.
+        init_alphas[0][self.tag_to_index[self.START_TAG]] = 0.
 
         # Wrap in a variable so that we will get automatic backprop
         forward_var = init_alphas
@@ -85,7 +108,7 @@ class Model(nn.Module):
                 alphas_t.append(self.log_sum_exp(next_tag_var).view(1))
             forward_var = torch.cat(alphas_t).view(1, -1)
         terminal_var = \
-            forward_var + self.transitions[self.tag_to_ix[self.STOP_TAG]]
+            forward_var + self.transitions[self.tag_to_index[self.STOP_TAG]]
         alpha = self.log_sum_exp(terminal_var)
         return alpha
 
@@ -100,13 +123,13 @@ class Model(nn.Module):
     def _score_sentence(self, feats, tags):
         # Gives the score of a provided tag sequence
         score = torch.zeros(1)
-        tags = torch.cat([torch.tensor([self.tag_to_ix[self.START_TAG]],
+        tags = torch.cat([torch.tensor([self.tag_to_index[self.START_TAG]],
                                        dtype=torch.long), tags])
         for i, feat in enumerate(feats):
             score = score + \
                 self.transitions[tags[i + 1], tags[i]] + feat[tags[i + 1]]
-        score = \
-            score + self.transitions[self.tag_to_ix[self.STOP_TAG], tags[-1]]
+        score = score \
+            + self.transitions[self.tag_to_index[self.STOP_TAG], tags[-1]]
         return score
 
     def _viterbi_decode(self, feats):
@@ -114,7 +137,7 @@ class Model(nn.Module):
 
         # Initialize the viterbi variables in log space
         init_vvars = torch.full((1, self.tagset_size), -10000.)
-        init_vvars[0][self.tag_to_ix[self.START_TAG]] = 0
+        init_vvars[0][self.tag_to_index[self.START_TAG]] = 0
 
         # forward_var at step i holds the viterbi variables for step i-1
         forward_var = init_vvars
@@ -139,7 +162,7 @@ class Model(nn.Module):
 
         # Transition to STOP_TAG
         terminal_var = \
-            forward_var + self.transitions[self.tag_to_ix[self.STOP_TAG]]
+            forward_var + self.transitions[self.tag_to_index[self.STOP_TAG]]
         best_tag_id = self.argmax(terminal_var)
         path_score = terminal_var[0][best_tag_id]
 
@@ -150,7 +173,7 @@ class Model(nn.Module):
             best_path.append(best_tag_id)
         # Pop off the start tag (we dont want to return that to the caller)
         start = best_path.pop()
-        assert start == self.tag_to_ix[self.START_TAG]  # Sanity check
+        assert start == self.tag_to_index[self.START_TAG]  # Sanity check
         best_path.reverse()
         return path_score, best_path
 

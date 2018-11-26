@@ -15,8 +15,8 @@ class TestModel(unittest.TestCase):
         sentence = self.training_data[0][0]
         word_to_index = util.make_index_from(self.training_data)
         tag_to_idnex = {"B": 0, "I": 1, "O": 2, "<START>": 3, "<STOP>": 4}
-        model = Model(10, tag_to_idnex, 10, 5)
-        sequence = model.prepare_sequence_for(sentence, word_to_index)
+        model = Model(word_to_index, tag_to_idnex, 10, 5)
+        sequence = model.degitize(sentence, word_to_index)
         expected_sequence = torch.tensor([0, 1, 2, 3, 4, 5], dtype=torch.long)
         self.assertTrue(torch.equal(sequence, expected_sequence))
 
