@@ -7,11 +7,6 @@ from model import Model
 EMBEDDING_DIM = 5
 HIDDEN_DIM = 4
 
-def prepare_sequence(seq, to_ix):
-    idxs = [to_ix[w] for w in seq]
-    return torch.tensor(idxs, dtype=torch.long)
-
-
 # Make up some training data
 training_data = [(
     "the wall street journal reported today that apple corporation made money".split(),
@@ -30,7 +25,7 @@ optimizer = optim.SGD(model.parameters(), lr=0.01, weight_decay=1e-4)
 
 # Check predictions before training
 with torch.no_grad():
-    precheck_sent = prepare_sequence(training_data[0][0], word_to_index)
+    precheck_sent = model.prepare_sequence_for(training_data[0][0], word_to_index)
     precheck_tags = torch.tensor([tag_to_index[t] for t in training_data[0][1]], dtype=torch.long)
     print(model(precheck_sent))
 
@@ -44,7 +39,7 @@ for epoch in range(
 
         # Step 2. Get our inputs ready for the network, that is,
         # turn them into Tensors of word indices.
-        sentence_in = prepare_sequence(sentence, word_to_index)
+        sentence_in = model.prepare_sequence_for(sentence, word_to_index)
         targets = torch.tensor([tag_to_index[t] for t in tags], dtype=torch.long)
 
         # Step 3. Run our forward pass.
@@ -57,6 +52,6 @@ for epoch in range(
 
 # Check predictions after training
 with torch.no_grad():
-    precheck_sent = prepare_sequence(training_data[0][0], word_to_index)
+    precheck_sent = model.prepare_sequence_for(training_data[0][0], word_to_index)
     print(model(precheck_sent))
 # We got it!

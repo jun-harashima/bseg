@@ -4,6 +4,7 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 requirements = ['Click>=6.0', ]
+test_requirements = ['numpy==1.15.4', 'torch==0.4.1', ]
 
 setup(
     author="Jun Harashima",
@@ -32,6 +33,7 @@ setup(
     name='bseg',
     packages=find_packages(include=['bseg']),
     test_suite='tests',
+    tests_require=test_requirements,
     url='https://github.com/jun-harashima/bseg',
     version='0.1.0',
     zip_safe=False,
