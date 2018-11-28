@@ -37,11 +37,16 @@ class Model(nn.Module):
         self.transitions.data[tag_to_index[self.START_TAG], :] = -10000
         self.transitions.data[:, tag_to_index[self.STOP_TAG]] = -10000
 
-        self.hidden = self.init_hidden()
+        self.hidden = self._initialize_hidden()
+
+    def _initialize_hidden(self):
+        return (torch.randn(2, 1, self.hidden_dim // 2),
+                torch.randn(2, 1, self.hidden_dim // 2))
 
     def train(self, training_data):
         optimizer = optim.SGD(self.parameters(), lr=0.01, weight_decay=1e-4)
-        for epoch in range(300):  # normally you would NOT do 300 epochs
+        for epoch in range(10):
+            print(epoch)
             for words, tags in training_data:
                 # Step 1. Remember that Pytorch accumulates gradients.
                 # We need to clear them out before each instance
@@ -49,36 +54,38 @@ class Model(nn.Module):
 
                 # Step 2. Get our inputs ready for the network, that is,
                 # turn them into Tensors of word indices.
-                word_indexes = self.degitize(words, self.word_to_index)
-                tag_indexes = self.degitize(tags, self.tag_to_index)
+                word_indexes = self._degitize(words, self.word_to_index)
+                tag_indexes = self._degitize(tags, self.tag_to_index)
 
                 # Step 3. Run our forward pass.
-                loss = self.neg_log_likelihood(word_indexes, tag_indexes)
+                loss = self._calculate_loss(word_indexes, tag_indexes)
 
                 # Step 4. Compute the loss, gradients, and update the
                 # parameters by calling optimizer.step()
                 loss.backward()
                 optimizer.step()
+            # For debug
+            word_indexes = \
+                self._degitize(training_data[0][0], self.word_to_index)
+            print(self(word_indexes))
 
-    def degitize(self, tokens, token_to_index):
+    def _degitize(self, tokens, token_to_index):
         indexes = [token_to_index[token] for token in tokens]
         return torch.tensor(indexes, dtype=torch.long)
 
-    def argmax(self, vec):
-        # return the argmax as a python int
-        _, idx = torch.max(vec, 1)
-        return idx.item()
+    def _calculate_loss(self, words, tags):
+        features = self._get_lstm_features(words)
+        forward_score = self._forward_alg(features)
+        gold_score = self._score_sentence(features, tags)
+        return forward_score - gold_score
 
-    # Compute log sum exp in a numerically stable way for the forward algorithm
-    def log_sum_exp(self, vec):
-        max_score = vec[0, self.argmax(vec)]
-        max_score_broadcast = max_score.view(1, -1).expand(1, vec.size()[1])
-        return max_score + \
-            torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
-
-    def init_hidden(self):
-        return (torch.randn(2, 1, self.hidden_dim // 2),
-                torch.randn(2, 1, self.hidden_dim // 2))
+    def _get_lstm_features(self, sentence):
+        self.hidden = self._initialize_hidden()
+        embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
+        lstm_out, self.hidden = self.lstm(embeds, self.hidden)
+        lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
+        lstm_feats = self.hidden2tag(lstm_out)
+        return lstm_feats
 
     def _forward_alg(self, feats):
         # Do the forward algorithm to compute the partition function
@@ -112,14 +119,6 @@ class Model(nn.Module):
         alpha = self.log_sum_exp(terminal_var)
         return alpha
 
-    def _get_lstm_features(self, sentence):
-        self.hidden = self.init_hidden()
-        embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
-        lstm_out, self.hidden = self.lstm(embeds, self.hidden)
-        lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
-        lstm_feats = self.hidden2tag(lstm_out)
-        return lstm_feats
-
     def _score_sentence(self, feats, tags):
         # Gives the score of a provided tag sequence
         score = torch.zeros(1)
@@ -131,6 +130,18 @@ class Model(nn.Module):
         score = score \
             + self.transitions[self.tag_to_index[self.STOP_TAG], tags[-1]]
         return score
+
+    def argmax(self, vec):
+        # return the argmax as a python int
+        _, idx = torch.max(vec, 1)
+        return idx.item()
+
+    # Compute log sum exp in a numerically stable way for the forward algorithm
+    def log_sum_exp(self, vec):
+        max_score = vec[0, self.argmax(vec)]
+        max_score_broadcast = max_score.view(1, -1).expand(1, vec.size()[1])
+        return max_score + \
+            torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
 
     def _viterbi_decode(self, feats):
         backpointers = []
@@ -176,12 +187,6 @@ class Model(nn.Module):
         assert start == self.tag_to_index[self.START_TAG]  # Sanity check
         best_path.reverse()
         return path_score, best_path
-
-    def neg_log_likelihood(self, sentence, tags):
-        feats = self._get_lstm_features(sentence)
-        forward_score = self._forward_alg(feats)
-        gold_score = self._score_sentence(feats, tags)
-        return forward_score - gold_score
 
     def forward(self, sentence):  # dont confuse this with _forward_alg above.
         # Get the emission scores from the BiLSTM
