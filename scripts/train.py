@@ -21,8 +21,3 @@ tag_to_index = {"B": 0, "I": 1, "O": 2, "<START>": 3, "<STOP>": 4}
 
 model = Model(word_to_index, tag_to_index, EMBEDDING_DIM, HIDDEN_DIM)
 model.train(training_data)
-
-# Check predictions after training
-with torch.no_grad():
-    precheck_sent = model.degitize(training_data[0][0], word_to_index)
-    print(model(precheck_sent))
