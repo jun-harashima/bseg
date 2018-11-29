@@ -47,31 +47,18 @@ class Model(nn.Module):
         optimizer = optim.SGD(self.parameters(), lr=0.01, weight_decay=1e-4)
         for epoch in range(10):
             print(epoch)
-            for words, tags in training_data:
+            for word_indexes, tag_indexes in training_data:
                 # Step 1. Remember that Pytorch accumulates gradients.
                 # We need to clear them out before each instance
                 self.zero_grad()
 
-                # Step 2. Get our inputs ready for the network, that is,
-                # turn them into Tensors of word indices.
-                word_indexes = self._degitize(words, self.word_to_index)
-                tag_indexes = self._degitize(tags, self.tag_to_index)
-
-                # Step 3. Run our forward pass.
+                # Step 2. Run our forward pass.
                 loss = self._calculate_loss(word_indexes, tag_indexes)
 
-                # Step 4. Compute the loss, gradients, and update the
+                # Step 3. Compute the loss, gradients, and update the
                 # parameters by calling optimizer.step()
                 loss.backward()
                 optimizer.step()
-            # For debug
-            word_indexes = \
-                self._degitize(training_data[0][0], self.word_to_index)
-            print(self(word_indexes))
-
-    def _degitize(self, tokens, token_to_index):
-        indexes = [token_to_index[token] for token in tokens]
-        return torch.tensor(indexes, dtype=torch.long)
 
     def _calculate_loss(self, words, tags):
         features = self._get_lstm_features(words)
