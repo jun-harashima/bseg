@@ -16,7 +16,7 @@ class PosTaggingDataset(Dataset):
 
     def _make_index(self, examples):
         word_to_index = {}
-        tag_to_index = {"BOS": 0, "EOS": 1}
+        tag_to_index = {}
         for (words, tags) in examples:
             for word in words:
                 self._add_index(word, word_to_index)

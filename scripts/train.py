@@ -1,29 +1,27 @@
 import torch
-from util import Util
 from model import Model
+from pos_tagging_dataset import PosTaggingDataset
 
 
-EMBEDDING_DIM = 5
-HIDDEN_DIM = 4
+EMBEDDING_DIM = 6
+HIDDEN_DIM = 6
 
-# Make up some training data
-raw_training_data = [(
-    "the wall street journal reported today that apple corporation made money".split(),
-    "B I I I O O O B I O O".split()
-), (
-    "georgia tech is a university in georgia".split(),
-    "B I O O O O B".split()
-)]
+examples = [
+    ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
+    ("Everybody read that book".split(), ["NN", "V", "DET", "NN"])
+]
+dataset = PosTaggingDataset(examples)
 
-util = Util()
-word_to_index = util.make_index_from(raw_training_data)
-tag_to_index = {"BOS": 0, "EOS": 1, "B": 2, "I": 3, "O": 4}
+model = Model(dataset, EMBEDDING_DIM, HIDDEN_DIM)
+model.train()
 
-training_data = []
-for words, tags in raw_training_data:
-    word_indexes = util.degitize(words, word_to_index)
-    tag_indexes = util.degitize(tags, tag_to_index)
-    training_data.append((word_indexes, tag_indexes))
-
-model = Model(word_to_index, tag_to_index, EMBEDDING_DIM, HIDDEN_DIM)
-model.train(training_data)
+with torch.no_grad():
+    word_indexes = dataset._degitize(examples[0][0], dataset.word_to_index)
+    scores = model(word_indexes)
+    # The sentence is "the dog ate the apple".  i,j corresponds to score for tag j
+    # for word i. The predicted tag is the maximum scoring tag.
+    # Here, we can see the predicted sequence below is 0 1 2 0 1
+    # since 0 is index of the maximum value of row 1,
+    # 1 is the index of maximum value of row 2, etc.
+    # Which is DET NOUN VERB DET NOUN, the correct sequence!
+    print(scores)
