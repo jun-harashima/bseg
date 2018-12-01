@@ -14,7 +14,8 @@ class TestPosTaggingDataset(unittest.TestCase):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)
         self.assertEqual(word_to_index,
                          {"人参": 0, "を": 1, "切る": 2, "大根": 3, "も": 4})
-        self.assertEqual(tag_to_index, {"名詞": 0, "助詞": 1, "動詞": 2})
+        self.assertEqual(tag_to_index,
+                         {"BOS": 0, "EOS": 1, "名詞": 2, "助詞": 3, "動詞": 4})
 
     def test__degitize_all(self):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)
@@ -22,11 +23,11 @@ class TestPosTaggingDataset(unittest.TestCase):
         self.assertTrue(torch.equal(degitized_examples[0][0],
                                     torch.tensor([0, 1, 2], dtype=torch.long)))
         self.assertTrue(torch.equal(degitized_examples[0][1],
-                                    torch.tensor([0, 1, 2], dtype=torch.long)))
+                                    torch.tensor([2, 3, 4], dtype=torch.long)))
         self.assertTrue(torch.equal(degitized_examples[1][0],
                                     torch.tensor([3, 4, 2], dtype=torch.long)))
         self.assertTrue(torch.equal(degitized_examples[1][1],
-                                    torch.tensor([0, 1, 2], dtype=torch.long)))
+                                    torch.tensor([2, 3, 4], dtype=torch.long)))
 
 
 if __name__ == "__main__":
