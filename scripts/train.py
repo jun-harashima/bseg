@@ -17,7 +17,7 @@ raw_training_data = [(
 
 util = Util()
 word_to_index = util.make_index_from(raw_training_data)
-tag_to_index = {"B": 0, "I": 1, "O": 2, "<START>": 3, "<STOP>": 4}
+tag_to_index = {"BOS": 0, "EOS": 1, "B": 2, "I": 3, "O": 4}
 
 training_data = []
 for words, tags in raw_training_data:
