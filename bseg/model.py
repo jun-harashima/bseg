@@ -9,9 +9,11 @@ torch.manual_seed(1)
 
 class Model(nn.Module):
 
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size):
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size,
+                 batch_size=1):
         super(Model, self).__init__()
         self.hidden_dim = hidden_dim
+        self.batch_size = batch_size
         self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim)
         self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
@@ -19,8 +21,8 @@ class Model(nn.Module):
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        return (torch.zeros(1, 1, self.hidden_dim),
-                torch.zeros(1, 1, self.hidden_dim))
+        return (torch.zeros(1, self.batch_size, self.hidden_dim),
+                torch.zeros(1, self.batch_size, self.hidden_dim))
 
     def forward(self, sentence):
         embeds = self.word_embeddings(sentence)
@@ -34,7 +36,9 @@ class Model(nn.Module):
         loss_function = nn.NLLLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
-            for (words, tags) in dataset.degitized_examples:
+            # TODO: Use DataLoader
+            for X, Y in zip(zip(*[iter(dataset.X)]*self.batch_size),
+                            zip(*[iter(dataset.Y)]*self.batch_size)):
                 # Step 1. Remember that Pytorch accumulates gradients.
                 # We need to clear them out before each instance
                 self.zero_grad()
@@ -44,10 +48,10 @@ class Model(nn.Module):
                 self.hidden = self._initialize_hidden()
 
                 # Step 2. Run our forward pass.
-                scores = self(words)
+                X = self(X)
 
                 # Step 3. Compute the loss, gradients, and update the
                 # parameters by calling optimizer.step()
-                loss = loss_function(scores, tags)
+                loss = loss_function(X, Y)
                 loss.backward()
                 optimizer.step()
