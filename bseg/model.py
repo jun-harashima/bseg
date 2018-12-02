@@ -10,7 +10,7 @@ torch.manual_seed(1)
 class Model(nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size,
-                 batch_size):
+                 batch_size=1):
         super(Model, self).__init__()
         self.hidden_dim = hidden_dim
         self.batch_size = batch_size
@@ -32,12 +32,14 @@ class Model(nn.Module):
         tag_scores = F.log_softmax(tag_space, dim=1)
         return tag_scores
 
-    def train(self, loader):
+    def train(self, dataset):
         loss_function = nn.NLLLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
             print(epoch)
-            for X, Y in loader:
+            # TODO: Use DataLoader
+            for X, Y in zip(zip(*[iter(dataset.X)]*self.batch_size),
+                            zip(*[iter(dataset.Y)]*self.batch_size)):
                 # Step 1. Remember that Pytorch accumulates gradients.
                 # We need to clear them out before each instance
                 self.zero_grad()
