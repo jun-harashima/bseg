@@ -9,26 +9,15 @@ torch.manual_seed(1)
 
 class Model(nn.Module):
 
-    def __init__(self, dataset, embedding_dim, hidden_dim):
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size):
         super(Model, self).__init__()
-        self.dataset = dataset
         self.hidden_dim = hidden_dim
-
-        self.word_embeddings = \
-            nn.Embedding(len(dataset.word_to_index), embedding_dim)
-
-        # The LSTM takes word embeddings as inputs, and outputs hidden states
-        # with dimensionality hidden_dim.
+        self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim)
+        self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
+        self.hidden = self._init_hidden()
 
-        # The linear layer that maps from hidden state space to tag space
-        self.hidden2tag = nn.Linear(hidden_dim, len(dataset.tag_to_index))
-        self.hidden = self._initialize_hidden()
-
-    def _initialize_hidden(self):
-        # Before we've done anything, we dont have any hidden state.
-        # Refer to the Pytorch documentation to see exactly
-        # why they have this dimensionality.
+    def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
         return (torch.zeros(1, 1, self.hidden_dim),
                 torch.zeros(1, 1, self.hidden_dim))
@@ -41,11 +30,11 @@ class Model(nn.Module):
         tag_scores = F.log_softmax(tag_space, dim=1)
         return tag_scores
 
-    def train(self):
+    def train(self, dataset):
         loss_function = nn.NLLLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
-            for (words, tags) in self.dataset.degitized_examples:
+            for (words, tags) in dataset.degitized_examples:
                 # Step 1. Remember that Pytorch accumulates gradients.
                 # We need to clear them out before each instance
                 self.zero_grad()
