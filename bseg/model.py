@@ -36,6 +36,7 @@ class Model(nn.Module):
         loss_function = nn.NLLLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
+            print(epoch)
             # TODO: Use DataLoader
             for X, Y in zip(zip(*[iter(dataset.X)]*self.batch_size),
                             zip(*[iter(dataset.Y)]*self.batch_size)):
