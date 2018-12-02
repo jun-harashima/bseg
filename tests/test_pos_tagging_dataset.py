@@ -1,5 +1,4 @@
 import unittest
-import torch
 from bseg.pos_tagging_dataset import PosTaggingDataset
 
 
@@ -17,17 +16,13 @@ class TestPosTaggingDataset(unittest.TestCase):
         self.assertEqual(tag_to_index,
                          {"PAD": 0, "名詞": 1, "助詞": 2, "動詞": 3})
 
-    def test__degitize_all(self):
+    def test__degitize(self):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)
-        degitized_examples = self.dataset._degitize_all(self.examples)
-        self.assertTrue(torch.equal(degitized_examples[0][0],
-                                    torch.tensor([1, 2, 3], dtype=torch.long)))
-        self.assertTrue(torch.equal(degitized_examples[0][1],
-                                    torch.tensor([1, 2, 3], dtype=torch.long)))
-        self.assertTrue(torch.equal(degitized_examples[1][0],
-                                    torch.tensor([4, 2, 3], dtype=torch.long)))
-        self.assertTrue(torch.equal(degitized_examples[1][1],
-                                    torch.tensor([1, 2, 3], dtype=torch.long)))
+        X, Y = self.dataset._degitize(self.examples)
+        self.assertTrue(X[0], [1, 2, 3])
+        self.assertTrue(Y[0], [1, 2, 3])
+        self.assertTrue(X[1], [4, 2, 3])
+        self.assertTrue(Y[1], [1, 2, 3])
 
 
 if __name__ == "__main__":
