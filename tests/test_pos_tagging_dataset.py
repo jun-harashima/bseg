@@ -13,7 +13,7 @@ class TestPosTaggingDataset(unittest.TestCase):
     def test__make_index(self):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)
         self.assertEqual(word_to_index,
-                         {"PAD": 0,"人参": 1, "を": 2, "切る": 3, "大根": 4})
+                         {"PAD": 0, "人参": 1, "を": 2, "切る": 3, "大根": 4})
         self.assertEqual(tag_to_index,
                          {"PAD": 0, "名詞": 1, "助詞": 2, "動詞": 3})
 
