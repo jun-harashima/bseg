@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import random
 
 
 torch.manual_seed(1)
@@ -37,9 +38,7 @@ class Model(nn.Module):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
             print(epoch)
-            # TODO: Use DataLoader
-            for X, Y in zip(zip(*[iter(dataset.X)]*self.batch_size),
-                            zip(*[iter(dataset.Y)]*self.batch_size)):
+            for X, Y in random.shuffle(self._split(dataset)):
                 # Step 1. Remember that Pytorch accumulates gradients.
                 # We need to clear them out before each instance
                 self.zero_grad()
@@ -56,3 +55,7 @@ class Model(nn.Module):
                 loss = loss_function(X, Y)
                 loss.backward()
                 optimizer.step()
+
+    def _split(self, dataset):
+        return zip(zip(*[iter(dataset.X)]*self.batch_size),
+                   zip(*[iter(dataset.Y)]*self.batch_size))
