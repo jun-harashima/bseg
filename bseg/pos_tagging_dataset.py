@@ -15,8 +15,8 @@ class PosTaggingDataset(Dataset):
         return self.degitized_examples[i]
 
     def _make_index(self, examples):
-        word_to_index = {}
-        tag_to_index = {}
+        word_to_index = {"PAD": 0}
+        tag_to_index = {"PAD": 0}
         for (words, tags) in examples:
             for word in words:
                 self._add_index(word, word_to_index)
