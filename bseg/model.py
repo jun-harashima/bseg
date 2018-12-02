@@ -16,6 +16,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.hidden_dim = hidden_dim
         self.batch_size = batch_size
+        self.tagset_size = tagset_size
         self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim)
         self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
@@ -36,6 +37,7 @@ class Model(nn.Module):
         X = X.view(-1, X.shape[2])
         X = self.hidden2tag(X)
         X = F.log_softmax(X, dim=1)
+        X = X.view(self.batch_size, lengths[0], self.tagset_size)
         return X
 
     def train(self, dataset):
@@ -45,23 +47,21 @@ class Model(nn.Module):
             batches = self._split(dataset)
             random.shuffle(batches)
             for X, Y in batches:
-                # Step 1. Remember that Pytorch accumulates gradients.
-                # We need to clear them out before each instance
                 self.zero_grad()
-
-                # Also, we need to clear out the hidden state of the LSTM,
-                # detaching it from its history on the last instance.
                 self.hidden = self._init_hidden()
 
                 X = self._sort(X)
                 lengths = [len(x) for x in X]
                 X = self(X, lengths, dataset.word_to_index["PAD"])
 
-                # Step 3. Compute the loss, gradients, and update the
-                # parameters by calling optimizer.step()
                 Y = self._sort(Y)
                 Y = self._pad(Y, lengths, dataset.tag_to_index["PAD"])
-                loss = loss_function(X, Y)
+                Y = torch.tensor(Y)
+
+                # TODO: create a mask for filtering out all tokens
+                # that are not <PAD>
+
+                loss = loss_function(X.view(-1, self.tagset_size), Y.view(-1))
                 loss.backward()
                 optimizer.step()
 
