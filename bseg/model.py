@@ -46,7 +46,7 @@ class Model(nn.Module):
 
                 # Also, we need to clear out the hidden state of the LSTM,
                 # detaching it from its history on the last instance.
-                self.hidden = self._initialize_hidden()
+                self.hidden = self._init_hidden()
 
                 # Step 2. Run our forward pass.
                 X = self(X)
