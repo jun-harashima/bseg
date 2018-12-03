@@ -1,17 +1,8 @@
-from torch.utils.data import Dataset
-
-
-class PosTaggingDataset(Dataset):
+class Dataset:
 
     def __init__(self, examples):
         self.word_to_index, self.tag_to_index = self._make_index(examples)
         self.X, self.Y = self._degitize(examples)
-
-    def __len__(self):
-        return len(self.degitized_examples)
-
-    def __getitem__(self, i):
-        return self.degitized_examples[i]
 
     def _make_index(self, examples):
         word_to_index = {"PAD": 0}
