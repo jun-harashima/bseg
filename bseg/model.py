@@ -48,6 +48,8 @@ class Model(nn.Module):
                 self.hidden = self._init_hidden()
 
                 X, Y = self._sort(X, Y)
+                X = self._pad(X, dataset.word_to_index["PAD"])
+                Y = self._pad(Y, dataset.tag_to_index["PAD"])
 
                 # Step 2. Run our forward pass.
                 X = self(X)
@@ -66,3 +68,9 @@ class Model(nn.Module):
         X = sorted(X, key=lambda x: -len(x))
         Y = sorted(Y, key=lambda y: -len(y))
         return X, Y
+
+    def _pad(self, Z, pad_index):
+        lengths = [len(z) for z in Z]
+        for i, z in enumerate(Z):
+            Z[i] = z + [pad_index] * (max(lengths) - len(Z[i]))
+        return Z

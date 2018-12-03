@@ -38,5 +38,11 @@ class TestModel(unittest.TestCase):
         self.assertEqual(X, [[5, 6, 7, 2, 4], [1, 2, 3, 4], [8, 9, 10]])
         self.assertEqual(Y, [[1, 2, 1, 2, 4], [1, 2, 3, 4], [1, 2, 4]])
 
+    def test__pad(self):
+        model = Model(200, 100, 10000, 10, 3)
+        X = model._pad([[1, 2, 3], [1, 2], [1]], 0)
+        self.assertEqual(X, [[1, 2, 3], [1, 2, 0], [1, 0, 0]])
+
+
 if __name__ == "__main__":
     unittest.main()
