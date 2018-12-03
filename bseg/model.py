@@ -47,6 +47,8 @@ class Model(nn.Module):
                 # detaching it from its history on the last instance.
                 self.hidden = self._init_hidden()
 
+                X, Y = self._sort(X, Y)
+
                 # Step 2. Run our forward pass.
                 X = self(X)
 
@@ -59,3 +61,8 @@ class Model(nn.Module):
     def _split(self, dataset):
         return zip(zip(*[iter(dataset.X)]*self.batch_size),
                    zip(*[iter(dataset.Y)]*self.batch_size))
+
+    def _sort(self, X, Y):
+        X = sorted(X, key=lambda x: -len(x))
+        Y = sorted(Y, key=lambda y: -len(y))
+        return X, Y
