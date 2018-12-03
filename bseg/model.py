@@ -25,11 +25,10 @@ class Model(nn.Module):
         return (torch.zeros(1, self.batch_size, self.hidden_dim),
                 torch.zeros(1, self.batch_size, self.hidden_dim))
 
-    def forward(self, sentence):
-        embeds = self.word_embeddings(sentence)
-        lstm_out, self.hidden = self.lstm(
-            embeds.view(len(sentence), 1, -1), self.hidden)
-        tag_space = self.hidden2tag(lstm_out.view(len(sentence), -1))
+    def forward(self, X):
+        X = self.word_embeddings(X)
+        lstm_out, self.hidden = self.lstm(X.view(len(X), 1, -1), self.hidden)
+        tag_space = self.hidden2tag(lstm_out.view(len(X), -1))
         tag_scores = F.log_softmax(tag_space, dim=1)
         return tag_scores
 
@@ -48,15 +47,13 @@ class Model(nn.Module):
                 self.hidden = self._init_hidden()
 
                 X = self._sort(X)
-                Y = self._sort(Y)
                 X = self._pad(X, dataset.word_to_index["PAD"])
-                Y = self._pad(Y, dataset.tag_to_index["PAD"])
-
-                # Step 2. Run our forward pass.
-                X = self(X)
+                X = self(torch.tensor(X))
 
                 # Step 3. Compute the loss, gradients, and update the
                 # parameters by calling optimizer.step()
+                Y = self._sort(Y)
+                Y = self._pad(Y, dataset.tag_to_index["PAD"])
                 loss = loss_function(X, Y)
                 loss.backward()
                 optimizer.step()
