@@ -1,13 +1,13 @@
 import unittest
-from bseg.pos_tagging_dataset import PosTaggingDataset
+from bseg.dataset import Dataset
 
 
-class TestPosTaggingDataset(unittest.TestCase):
+class TestDataset(unittest.TestCase):
 
     def setUp(self):
         self.examples = [(("人参", "を", "切る"), ("名詞", "助詞", "動詞")),
                          (("大根", "を", "切る"), ("名詞", "助詞", "動詞"))]
-        self.dataset = PosTaggingDataset(self.examples)
+        self.dataset = Dataset(self.examples)
 
     def test__make_index(self):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)

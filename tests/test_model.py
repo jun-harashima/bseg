@@ -1,7 +1,7 @@
 import unittest
 import torch
 from bseg.model import Model
-from bseg.pos_tagging_dataset import PosTaggingDataset
+from bseg.dataset import Dataset
 
 
 class TestModel(unittest.TestCase):
@@ -16,11 +16,12 @@ class TestModel(unittest.TestCase):
                     (("大根", "を", "切る"), ("名詞", "助詞", "動詞")),
                     (("白菜", "は", "蒸す"), ("名詞", "助詞", "動詞")),
                     (("牛蒡", "は", "削ぐ"), ("名詞", "助詞", "動詞"))]
-        dataset = PosTaggingDataset(examples)
+        dataset = Dataset(examples)
         model = Model(200, 100, 10000, 10, 2)
         batch = list(model._split(dataset))[0]
         expected_batch = (([1, 2, 3], [4, 2, 3]), ([1, 2, 3], [1, 2, 3]))
-        self.assertEqual(batch, expected_batch )
+        self.assertEqual(batch, expected_batch)
+
 
 if __name__ == "__main__":
     unittest.main()
