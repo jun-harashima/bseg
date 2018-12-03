@@ -47,7 +47,8 @@ class Model(nn.Module):
                 # detaching it from its history on the last instance.
                 self.hidden = self._init_hidden()
 
-                X, Y = self._sort(X, Y)
+                X = self._sort(X)
+                Y = self._sort(Y)
                 X = self._pad(X, dataset.word_to_index["PAD"])
                 Y = self._pad(Y, dataset.tag_to_index["PAD"])
 
@@ -64,10 +65,8 @@ class Model(nn.Module):
         return zip(zip(*[iter(dataset.X)]*self.batch_size),
                    zip(*[iter(dataset.Y)]*self.batch_size))
 
-    def _sort(self, X, Y):
-        X = sorted(X, key=lambda x: -len(x))
-        Y = sorted(Y, key=lambda y: -len(y))
-        return X, Y
+    def _sort(self, Z):
+        return sorted(Z, key=lambda z: -len(z))
 
     def _pad(self, Z, pad_index):
         lengths = [len(z) for z in Z]
