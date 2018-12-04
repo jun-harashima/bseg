@@ -31,10 +31,12 @@ class Model(nn.Module):
         X = self.word_embeddings(torch.tensor(X))
         X = self._pack(X, lengths)
         X, self.hidden = self.lstm(X, self.hidden)
-        X = self._unpack(X)
-        tag_space = self.hidden2tag(X.view(len(X), -1))
-        tag_scores = F.log_softmax(tag_space, dim=1)
-        return tag_scores
+        X, _ = self._unpack(X)
+        X = X.contiguous()
+        X = X.view(-1, X.shape[2])
+        X = self.hidden2tag(X)
+        X = F.log_softmax(X, dim=1)
+        return X
 
     def train(self, dataset):
         loss_function = nn.NLLLoss()
