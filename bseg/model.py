@@ -31,6 +31,7 @@ class Model(nn.Module):
         X = self.word_embeddings(torch.tensor(X))
         X = self._pack(X, lengths)
         X, self.hidden = self.lstm(X, self.hidden)
+        X = self._unpack(X)
         tag_space = self.hidden2tag(X.view(len(X), -1))
         tag_scores = F.log_softmax(tag_space, dim=1)
         return tag_scores
@@ -76,3 +77,6 @@ class Model(nn.Module):
 
     def _pack(self, X, lengths):
         return U.rnn.pack_padded_sequence(X, lengths, batch_first=True)
+
+    def _unpack(self, X):
+        return U.rnn.pad_packed_sequence(X, batch_first=True)
