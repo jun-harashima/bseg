@@ -38,8 +38,9 @@ class Model(nn.Module):
         loss_function = nn.NLLLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
-            print(epoch)
-            for X, Y in random.shuffle(self._split(dataset)):
+            batches = self._split(dataset)
+            random.shuffle(batches)
+            for X, Y in batches:
                 # Step 1. Remember that Pytorch accumulates gradients.
                 # We need to clear them out before each instance
                 self.zero_grad()
@@ -61,8 +62,8 @@ class Model(nn.Module):
                 optimizer.step()
 
     def _split(self, dataset):
-        return zip(zip(*[iter(dataset.X)]*self.batch_size),
-                   zip(*[iter(dataset.Y)]*self.batch_size))
+        return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
+                        zip(*[iter(dataset.Y)]*self.batch_size)))
 
     def _sort(self, Z):
         return sorted(Z, key=lambda z: -len(z))
