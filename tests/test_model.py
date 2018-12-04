@@ -34,12 +34,14 @@ class TestModel(unittest.TestCase):
 
     def test__pad(self):
         model = Model(200, 100, 10000, 10, 3)
-        X3 = model._pad(self.X2, 0)
+        lengths = [len(x) for x in self.X2]
+        X3 = model._pad(self.X2, lengths, 0)
         self.assertEqual(X3, self.X3)
 
     def test__pack(self):
         model = Model(200, 100, 10000, 10, 3)
-        X4 = model._pack(torch.tensor(self.X3))
+        lengths = [len(x) for x in self.X2]
+        X4 = model._pack(torch.tensor(self.X3), lengths)
         self.assertTrue(torch.equal(X4.data,
                                     torch.tensor([1, 1, 1, 2, 2, 2, 3, 3, 4])))
         self.assertTrue(torch.equal(X4.batch_sizes,

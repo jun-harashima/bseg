@@ -26,11 +26,12 @@ class Model(nn.Module):
         return (torch.zeros(1, self.batch_size, self.hidden_dim),
                 torch.zeros(1, self.batch_size, self.hidden_dim))
 
-    def forward(self, X):
-        X = self.word_embeddings(X)
-        X = self._pack(X)
-        lstm_out, self.hidden = self.lstm(X.view(len(X), 1, -1), self.hidden)
-        tag_space = self.hidden2tag(lstm_out.view(len(X), -1))
+    def forward(self, X, lengths, pad_index):
+        X = self._pad(X, lengths, pad_index)
+        X = self.word_embeddings(torch.tensor(X))
+        X = self._pack(X, lengths)
+        X, self.hidden = self.lstm(X, self.hidden)
+        tag_space = self.hidden2tag(X.view(len(X), -1))
         tag_scores = F.log_softmax(tag_space, dim=1)
         return tag_scores
 
@@ -50,13 +51,13 @@ class Model(nn.Module):
                 self.hidden = self._init_hidden()
 
                 X = self._sort(X)
-                X = self._pad(X, dataset.word_to_index["PAD"])
-                X = self(torch.tensor(X))
+                lengths = [len(x) for x in X]
+                X = self(X, lengths, dataset.word_to_index["PAD"])
 
                 # Step 3. Compute the loss, gradients, and update the
                 # parameters by calling optimizer.step()
                 Y = self._sort(Y)
-                Y = self._pad(Y, dataset.tag_to_index["PAD"])
+                Y = self._pad(Y, lengths, dataset.tag_to_index["PAD"])
                 loss = loss_function(X, Y)
                 loss.backward()
                 optimizer.step()
@@ -68,12 +69,10 @@ class Model(nn.Module):
     def _sort(self, Z):
         return sorted(Z, key=lambda z: -len(z))
 
-    def _pad(self, Z, pad_index):
-        lengths = [len(z) for z in Z]
+    def _pad(self, Z, lengths, pad_index):
         for i, z in enumerate(Z):
             Z[i] = z + [pad_index] * (max(lengths) - len(Z[i]))
         return Z
 
-    def _pack(self, X):
-        lengths = [len(torch.nonzero(x)) for x in X]
+    def _pack(self, X, lengths):
         return U.rnn.pack_padded_sequence(X, lengths, batch_first=True)
