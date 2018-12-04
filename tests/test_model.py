@@ -6,6 +6,11 @@ from bseg.dataset import Dataset
 
 class TestModel(unittest.TestCase):
 
+    def setUp(self):
+        self.X1 = [[1, 2, 3], [1, 2], [1, 2, 3, 4]]
+        self.X2 = [[1, 2, 3, 4], [1, 2, 3], [1, 2]]
+        self.X3 = [[1, 2, 3, 4], [1, 2, 3, 0], [1, 2, 0, 0]]
+
     def test___init__(self):
         model = Model(200, 100, 10000, 10)
         expected_hidden = (torch.zeros(1, 1, 100), torch.zeros(1, 1, 100))
@@ -24,21 +29,21 @@ class TestModel(unittest.TestCase):
 
     def test__sort(self):
         model = Model(200, 100, 10000, 10, 3)
-        X = model._sort([[1, 2], [1], [1, 2, 3]])
-        self.assertEqual(X, [[1, 2, 3], [1, 2], [1]])
+        X2 = model._sort(self.X1)
+        self.assertEqual(X2, self.X2)
 
     def test__pad(self):
         model = Model(200, 100, 10000, 10, 3)
-        X = model._pad([[1, 2, 3], [1, 2], [1]], 0)
-        self.assertEqual(X, [[1, 2, 3], [1, 2, 0], [1, 0, 0]])
+        X3 = model._pad(self.X2, 0)
+        self.assertEqual(X3, self.X3)
 
     def test__pack(self):
         model = Model(200, 100, 10000, 10, 3)
-        X = torch.tensor([[1, 2, 3, 4], [1, 2, 3, 0], [1, 2, 0, 0]])
-        X = model._pack(X)
-        self.assertTrue(torch.equal(X.data,
+        X4 = model._pack(torch.tensor(self.X3))
+        self.assertTrue(torch.equal(X4.data,
                                     torch.tensor([1, 1, 1, 2, 2, 2, 3, 3, 4])))
-        self.assertTrue(torch.equal(X.batch_sizes, torch.tensor([3, 3, 2, 1])))
+        self.assertTrue(torch.equal(X4.batch_sizes,
+                                    torch.tensor([3, 3, 2, 1])))
 
 
 if __name__ == "__main__":
