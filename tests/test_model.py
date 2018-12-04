@@ -1,5 +1,6 @@
 import unittest
 import torch
+from torch.nn.utils.rnn import PackedSequence
 from bseg.model import Model
 from bseg.dataset import Dataset
 
@@ -10,6 +11,9 @@ class TestModel(unittest.TestCase):
         self.X1 = [[1, 2, 3], [1, 2], [1, 2, 3, 4]]
         self.X2 = [[1, 2, 3, 4], [1, 2, 3], [1, 2]]
         self.X3 = [[1, 2, 3, 4], [1, 2, 3, 0], [1, 2, 0, 0]]
+        self.X4 = PackedSequence(torch.tensor([1, 1, 1, 2, 2, 2, 3, 3, 4]),
+                                 torch.tensor([3, 3, 2, 1]))
+        self.lengths = [len(x) for x in self.X2]
 
     def test___init__(self):
         model = Model(200, 100, 10000, 10)
@@ -34,18 +38,20 @@ class TestModel(unittest.TestCase):
 
     def test__pad(self):
         model = Model(200, 100, 10000, 10, 3)
-        lengths = [len(x) for x in self.X2]
-        X3 = model._pad(self.X2, lengths, 0)
+        X3 = model._pad(self.X2, self.lengths, 0)
         self.assertEqual(X3, self.X3)
 
     def test__pack(self):
         model = Model(200, 100, 10000, 10, 3)
-        lengths = [len(x) for x in self.X2]
-        X4 = model._pack(torch.tensor(self.X3), lengths)
-        self.assertTrue(torch.equal(X4.data,
-                                    torch.tensor([1, 1, 1, 2, 2, 2, 3, 3, 4])))
-        self.assertTrue(torch.equal(X4.batch_sizes,
-                                    torch.tensor([3, 3, 2, 1])))
+        X4 = model._pack(torch.tensor(self.X3), self.lengths)
+        self.assertTrue(torch.equal(X4.data, self.X4.data))
+        self.assertTrue(torch.equal(X4.batch_sizes, self.X4.batch_sizes))
+
+    def test__unpack(self):
+        model = Model(200, 100, 10000, 10, 3)
+        X5 = model._unpack(self.X4)
+        self.assertTrue(torch.equal(X5[0], torch.tensor(self.X3)))
+        self.assertTrue(torch.equal(X5[1], torch.tensor(self.lengths)))
 
 
 if __name__ == "__main__":
