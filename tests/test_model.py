@@ -32,6 +32,14 @@ class TestModel(unittest.TestCase):
         X = model._pad([[1, 2, 3], [1, 2], [1]], 0)
         self.assertEqual(X, [[1, 2, 3], [1, 2, 0], [1, 0, 0]])
 
+    def test__pack(self):
+        model = Model(200, 100, 10000, 10, 3)
+        X = torch.tensor([[1, 2, 3, 4], [1, 2, 3, 0], [1, 2, 0, 0]])
+        X = model._pack(X)
+        self.assertTrue(torch.equal(X.data,
+                                    torch.tensor([1, 1, 1, 2, 2, 2, 3, 3, 4])))
+        self.assertTrue(torch.equal(X.batch_sizes, torch.tensor([3, 3, 2, 1])))
+
 
 if __name__ == "__main__":
     unittest.main()

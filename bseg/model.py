@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.nn.utils as U
 import torch.optim as optim
 import random
 
@@ -27,6 +28,7 @@ class Model(nn.Module):
 
     def forward(self, X):
         X = self.word_embeddings(X)
+        X = self._pack(X)
         lstm_out, self.hidden = self.lstm(X.view(len(X), 1, -1), self.hidden)
         tag_space = self.hidden2tag(lstm_out.view(len(X), -1))
         tag_scores = F.log_softmax(tag_space, dim=1)
@@ -70,3 +72,7 @@ class Model(nn.Module):
         for i, z in enumerate(Z):
             Z[i] = z + [pad_index] * (max(lengths) - len(Z[i]))
         return Z
+
+    def _pack(self, X):
+        lengths = [len(torch.nonzero(x)) for x in X]
+        return U.rnn.pack_padded_sequence(X, lengths, batch_first=True)
