@@ -52,10 +52,10 @@ class Model(nn.Module):
 
                 X = self._sort(X)
                 lengths = [len(x) for x in X]
-                X = self(X, lengths, dataset.word_to_index["PAD"])
+                X = self(X, lengths, dataset.word_to_index["<PAD>"])
 
                 Y = self._sort(Y)
-                Y = self._pad(Y, lengths, dataset.tag_to_index["PAD"])
+                Y = self._pad(Y, lengths, dataset.tag_to_index["<PAD>"])
                 Y = torch.tensor(Y)
 
                 # TODO: create a mask for filtering out all tokens
