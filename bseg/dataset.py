@@ -5,8 +5,8 @@ class Dataset:
         self.X, self.Y = self._degitize(examples)
 
     def _make_index(self, examples):
-        word_to_index = {"PAD": 0}
-        tag_to_index = {"PAD": 0}
+        word_to_index = {"<PAD>": 0}
+        tag_to_index = {"<PAD>": 0}
         for (words, tags) in examples:
             for word in words:
                 self._add_index(word, word_to_index)
