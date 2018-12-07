@@ -12,12 +12,12 @@ torch.manual_seed(1)
 class Model(nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size,
-                 batch_size=1):
+                 batch_size=1, padding_idx=0):
         super(Model, self).__init__()
         self.hidden_dim = hidden_dim
         self.batch_size = batch_size
         self.tagset_size = tagset_size
-        self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
+        self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim)
         self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
         self.hidden = self._init_hidden()
@@ -29,7 +29,7 @@ class Model(nn.Module):
 
     def forward(self, X, lengths, pad_index):
         X = self._pad(X, lengths, pad_index)
-        X = self.word_embeddings(torch.tensor(X))
+        X = self._embed(torch.tensor(X))
         X = self._pack(X, lengths)
         X, self.hidden = self.lstm(X, self.hidden)
         X, _ = self._unpack(X)
@@ -76,6 +76,9 @@ class Model(nn.Module):
         for i, z in enumerate(Z):
             Z[i] = z + [pad_index] * (max(lengths) - len(Z[i]))
         return Z
+
+    def _embed(self, X, padding_idx):
+        return self.embeddings(X)
 
     def _pack(self, X, lengths):
         return U.rnn.pack_padded_sequence(X, lengths, batch_first=True)
