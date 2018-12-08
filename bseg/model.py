@@ -77,7 +77,7 @@ class Model(nn.Module):
             Z[i] = z + [pad_index] * (max(lengths) - len(Z[i]))
         return Z
 
-    def _embed(self, X, padding_idx):
+    def _embed(self, X):
         return self.embeddings(X)
 
     def _pack(self, X, lengths):
