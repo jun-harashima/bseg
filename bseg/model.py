@@ -33,8 +33,9 @@ class Model(nn.Module):
         X = self._pack(X, lengths)
         X, self.hidden = self._lstm(X)
         X, _ = self._unpack(X)
-        X = X.contiguous()
-        X = X.view(-1, X.shape[2])
+        X = X.contiguous().view(-1, X.shape[2])
+        # Note that hidden2tag returns values also for padded elements. We
+        # ignore them when computing our loss.
         X = self.hidden2tag(X)
         X = F.log_softmax(X, dim=1)
         X = X.view(self.batch_size, lengths[0], self.tagset_size)
