@@ -83,11 +83,17 @@ class TestModel(unittest.TestCase):
         self.assertEqual(hidden[0].shape, (1, 3, 4))
         self.assertEqual(hidden[1].shape, (1, 3, 4))
 
-    # def test__unpack(self):
-    #     X6 = self.model._unpack(self.X5)
-    #     print(X6)
-    #     self.assertTrue(torch.equal(X6[0], torch.tensor(self.X3)))
-    #     self.assertTrue(torch.equal(X6[1], torch.tensor(self.lengths)))
+    def test__unpack(self):
+        X6, hidden = self.model._lstm(self.X5)
+        X7 = self.model._unpack(X6)
+        # batch size, sequence length, hidden size
+        self.assertEqual(X7[0].data.shape, torch.Size([3, 4, 4]))
+        # padded values should be zeros
+        self.assertTrue(torch.equal(X7[0].data[1][3], torch.zeros(4)))
+        self.assertTrue(torch.equal(X7[0].data[2][2], torch.zeros(4)))
+        self.assertTrue(torch.equal(X7[0].data[2][3], torch.zeros(4)))
+        # batch sizes
+        self.assertTrue(torch.equal(X7[1], torch.tensor([4, 3, 2])))
 
 
 if __name__ == "__main__":
