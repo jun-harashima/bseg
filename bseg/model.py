@@ -59,10 +59,7 @@ class Model(nn.Module):
                 Y = self._pad(Y, lengths, dataset.tag_to_index["<PAD>"])
                 Y = torch.tensor(Y)
 
-                # TODO: create a mask for filtering out all tokens
-                # that are not <PAD>
-
-                loss = loss_function(X.view(-1, self.tagset_size), Y.view(-1))
+                loss = self._calc_cross_entropy(X, Y)
                 loss.backward()
                 optimizer.step()
 
@@ -89,3 +86,13 @@ class Model(nn.Module):
 
     def _unpack(self, X):
         return U.rnn.pad_packed_sequence(X, batch_first=True)
+
+    def _calc_cross_entropy(self, X, Y):
+        Y = Y.view(-1)
+        X = X.view(-1, self.tagset_size)
+        # Create a mask for filtering out all tokens that are not <PAD>
+        mask = (Y > 0).float()
+        X = X[range(X.shape[0]), Y] * mask
+        token_num = int(torch.sum(mask))
+        return -torch.sum(X) / token_num
+
