@@ -3,8 +3,8 @@ from model import Model
 from dataset import Dataset
 
 
-EMBEDDING_DIM = 6
-HIDDEN_DIM = 6
+EMBEDDING_DIM = 2
+HIDDEN_DIM = 4
 
 examples = [
     (("人参", "を", "切る"), ("名詞", "助詞", "動詞")),
