@@ -31,7 +31,7 @@ class Model(nn.Module):
         X = self._pad(X, lengths, pad_index)
         X = self._embed(torch.tensor(X))
         X = self._pack(X, lengths)
-        X, self.hidden = self.lstm(X, self.hidden)
+        X, self.hidden = self._lstm(X)
         X, _ = self._unpack(X)
         X = X.contiguous()
         X = X.view(-1, X.shape[2])
@@ -82,6 +82,9 @@ class Model(nn.Module):
 
     def _pack(self, X, lengths):
         return U.rnn.pack_padded_sequence(X, lengths, batch_first=True)
+
+    def _lstm(self, X):
+        return self.lstm(X, self.hidden)
 
     def _unpack(self, X):
         return U.rnn.pad_packed_sequence(X, batch_first=True)

@@ -76,6 +76,13 @@ class TestModel(unittest.TestCase):
         self.assertTrue(torch.equal(X5.data, self.X5.data))
         self.assertTrue(torch.equal(X5.batch_sizes, self.X5.batch_sizes))
 
+    def test__lstm(self):
+        X6, hidden = self.model._lstm(self.X5)
+        # (9, 4) is length of packed sequence and dimension of hidden
+        self.assertEqual(X6.data.shape, (9, 4))
+        self.assertEqual(hidden[0].shape, (1, 3, 4))
+        self.assertEqual(hidden[1].shape, (1, 3, 4))
+
     # def test__unpack(self):
     #     X6 = self.model._unpack(self.X5)
     #     print(X6)
