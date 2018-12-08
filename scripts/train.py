@@ -14,5 +14,5 @@ examples = [
 dataset = Dataset(examples)
 
 model = Model(EMBEDDING_DIM, HIDDEN_DIM, len(dataset.word_to_index),
-              len(dataset.tag_to_index))
+              len(dataset.tag_to_index), 3)
 model.train(dataset)
