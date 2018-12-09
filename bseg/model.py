@@ -88,11 +88,20 @@ class Model(nn.Module):
         return U.rnn.pad_packed_sequence(X, batch_first=True)
 
     def _calc_cross_entropy(self, X, Y):
-        Y = Y.view(-1)
+        # X = [[[-2.02, -1.97, -1.66, ...], -> [[-2.02, -1.97, -1.66, ...],
+        #       [-2.06, -1.85, -1.70, ...]]     [-2.06, -1.85, -1.70, ...],
+        #      [[-2.12, -1.91, -1.65, ...],     [-2.12, -1.91, -1.65, ...],
+        #       [-2.16, -1.85, -1.66, ...]]])   [-2.16, -1.85, -1.66, ...]])
         X = X.view(-1, self.tagset_size)
-        # Create a mask for filtering out all tokens that are not <PAD>
+        # Y = [[1, 2], [1, 0]] -> [1, 2, 1, 0]
+        Y = Y.view(-1)
+        # X = [-1.97, -1.70, -1.91, -2.16]
+        X = X[range(X.shape[0]), Y]
+        # mask = [1., 1., 1., 0.] (for <PAD>)
         mask = (Y > 0).float()
-        X = X[range(X.shape[0]), Y] * mask
+        # X = [-1.97, -1.70, -1.91, -0.00]
+        X = X * mask
+        # token_num = 3
         token_num = int(torch.sum(mask))
+        # -1 * (-1.97 + -1.70 + -1.91 + -0.00) / 3
         return -torch.sum(X) / token_num
-

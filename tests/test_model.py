@@ -95,6 +95,15 @@ class TestModel(unittest.TestCase):
         # batch sizes
         self.assertTrue(torch.equal(X7[1], torch.tensor([4, 3, 2])))
 
+    def test__calc_cross_entropy(self):
+        X = torch.tensor([[[-2.02, -1.97, -1.66, -1.91, -1.51, -1.75],
+                           [-2.06, -1.85, -1.70, -2.10, -1.47, -1.69]],
+                          [[-2.12, -1.91, -1.65, -2.05, -1.42, -1.75],
+                           [-2.16, -1.85, -1.66, -2.14, -1.41, -1.72]]])
+        Y = torch.tensor([[1, 2], [1, 0]])
+        loss = self.model._calc_cross_entropy(X, Y)
+        self.assertTrue(torch.equal(loss, torch.tensor(1.86)))
+
 
 if __name__ == "__main__":
     unittest.main()
