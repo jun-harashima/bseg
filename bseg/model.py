@@ -47,6 +47,7 @@ class Model(nn.Module):
         for epoch in range(10):
             batches = self._split(dataset)
             random.shuffle(batches)
+            accumulated_loss = 0
             for X, Y in batches:
                 self.zero_grad()
                 self.hidden = self._init_hidden()
@@ -62,6 +63,8 @@ class Model(nn.Module):
                 loss = self._calc_cross_entropy(X, Y)
                 loss.backward()
                 optimizer.step()
+                accumulated_loss += loss
+            print("epoch: {} loss: {}".format(epoch, accumulated_loss))
 
     def _split(self, dataset):
         return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
