@@ -14,22 +14,43 @@ class Model(nn.Module):
     def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size,
                  batch_size=1, padding_idx=0):
         super(Model, self).__init__()
+        self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
-        self.batch_size = batch_size
+        self.vocab_size = vocab_size
         self.tagset_size = tagset_size
-        self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx)
-        self.lstm = nn.LSTM(embedding_dim, hidden_dim)
-        self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
+        self.batch_size = batch_size
+        self.padding_idx = padding_idx
+        self.device = self._init_device()
+        self.embeddings = self._init_embeddings()
+        self.lstm = self._init_lstm()
+        self.hidden2tag = self._init_hidden2tag()
         self.hidden = self._init_hidden()
+
+    def _init_device(self):
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def _init_embeddings(self):
+        embeddings = nn.Embedding(self.vocab_size, self.embedding_dim,
+                                  self.padding_idx)
+        return embeddings.cuda() if torch.cuda.is_available() else embeddings
+
+    def _init_lstm(self):
+        lstm = nn.LSTM(self.embedding_dim, self.hidden_dim)
+        return lstm.cuda() if torch.cuda.is_available() else lstm
+
+    def _init_hidden2tag(self):
+        hidden2tag = nn.Linear(self.hidden_dim, self.tagset_size)
+        return hidden2tag.cuda() if torch.cuda.is_available() else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        return (torch.zeros(1, self.batch_size, self.hidden_dim),
-                torch.zeros(1, self.batch_size, self.hidden_dim))
+        zeros = torch.zeros(1, self.batch_size, self.hidden_dim,
+                            device=self.device)
+        return (zeros, zeros)
 
     def forward(self, X, lengths, pad_index):
         X = self._pad(X, lengths, pad_index)
-        X = self._embed(torch.tensor(X))
+        X = self._embed(torch.tensor(X, device=self.device))
         X = self._pack(X, lengths)
         X, self.hidden = self._lstm(X)
         X, _ = self._unpack(X)
@@ -57,7 +78,7 @@ class Model(nn.Module):
 
                 Y = self._sort(Y)
                 Y = self._pad(Y, lengths, dataset.tag_to_index["<PAD>"])
-                Y = torch.tensor(Y)
+                Y = torch.tensor(Y, device=self.device)
 
                 loss = self._calc_cross_entropy(X, Y)
                 loss.backward()
