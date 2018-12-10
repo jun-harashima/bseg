@@ -42,7 +42,6 @@ class Model(nn.Module):
         return X
 
     def train(self, dataset):
-        loss_function = nn.NLLLoss()
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
             batches = self._split(dataset)
