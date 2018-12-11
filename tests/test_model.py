@@ -58,8 +58,9 @@ class TestModel(unittest.TestCase):
         self.assertEqual(batches[0], (self.X1, self.Y))
 
     def test__sort(self):
-        X2 = self.model._sort(self.X1)
+        X2, indices = self.model._sort(self.X1)
         self.assertEqual(X2, self.X2)
+        self.assertEqual(indices, [2, 0, 1])
 
     def test__pad(self):
         X3 = self.model._pad(self.X2, self.lengths, 0)

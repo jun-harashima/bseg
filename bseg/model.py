@@ -72,7 +72,7 @@ class Model(nn.Module):
                 self.zero_grad()
                 self.hidden = self._init_hidden()
 
-                X = self._sort(X)
+                X, _ = self._sort(X)
                 lengths = [len(x) for x in X]
                 X = self(X, lengths, dataset.word_to_index["<PAD>"])
 
@@ -91,7 +91,8 @@ class Model(nn.Module):
                         zip(*[iter(dataset.Y)]*self.batch_size)))
 
     def _sort(self, Z):
-        return sorted(Z, key=lambda z: -len(z))
+        indices, Z = zip(*sorted(enumerate(Z), key=lambda z: -len(z[1])))
+        return list(Z), list(indices)
 
     def _pad(self, Z, lengths, pad_index):
         for i, z in enumerate(Z):
