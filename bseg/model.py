@@ -86,6 +86,21 @@ class Model(nn.Module):
                 accumulated_loss += loss
             print("epoch: {} loss: {}".format(epoch, accumulated_loss))
 
+    def test(self, dataset):
+        results = []
+        batches = self._split(dataset)
+        for X, Y in batches:
+            X, indices = self._sort(X)
+            lengths = [len(x) for x in X]
+            X = self(X, lengths, dataset.word_to_index["<PAD>"])
+
+            Y, _ = self._sort(Y)
+            Y = self._pad(Y, lengths, dataset.tag_to_index["<PAD>"])
+            Y = torch.tensor(Y, device=self.device)
+
+            self._append(results, X, Y, indices)
+        return results
+
     def _split(self, dataset):
         return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
                         zip(*[iter(dataset.Y)]*self.batch_size)))
@@ -129,3 +144,12 @@ class Model(nn.Module):
         token_num = int(torch.sum(mask))
         # -1 * (-1.97 + -1.70 + -1.91 + -0.00) / 3
         return -torch.sum(X) / token_num
+
+    def _append(self, results, X, Y, indices):
+        mask = (Y > 0).long()  # TODO: Do not use Y in test
+        _, __results = X.max(-1)
+        __results = __results * mask
+        _results = [None] * len(X)
+        for i, index in enumerate(indices):
+            _results[index] = [y for y in __results[i].tolist() if y != 0]
+        results.append(_results)

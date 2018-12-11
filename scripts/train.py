@@ -16,3 +16,14 @@ dataset = Dataset(examples)
 model = Model(EMBEDDING_DIM, HIDDEN_DIM, len(dataset.word_to_index),
               len(dataset.tag_to_index), 3)
 model.train(dataset)
+torch.save(model.state_dict(), 'pos.model')
+
+model.load_state_dict(torch.load('pos.model'))
+examples = [
+    (("葱", "を", "切る"), ("名詞", "助詞", "動詞")),
+    (("細く", "切る"), ("副詞", "動詞")),
+    (("大根", "は", "ざっくり", "刻む"), ("名詞", "助詞", "形容詞", "動詞"))
+]
+dataset = Dataset(examples)
+results = model.test(dataset)
+print(results)
