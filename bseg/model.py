@@ -76,7 +76,7 @@ class Model(nn.Module):
                 lengths = [len(x) for x in X]
                 X = self(X, lengths, dataset.word_to_index["<PAD>"])
 
-                Y = self._sort(Y)
+                Y, _ = self._sort(Y)
                 Y = self._pad(Y, lengths, dataset.tag_to_index["<PAD>"])
                 Y = torch.tensor(Y, device=self.device)
 
