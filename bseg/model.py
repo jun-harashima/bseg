@@ -48,9 +48,8 @@ class Model(nn.Module):
                             device=self.device)
         return (zeros, zeros)
 
-    def forward(self, X, lengths, pad_index):
-        X = self._pad(X, lengths, pad_index)
-        X = self._embed(torch.tensor(X, device=self.device))
+    def forward(self, X, lengths):
+        X = self._embed(X)
         X = self._pack(X, lengths)
         X, self.hidden = self._lstm(X)
         X, _ = self._unpack(X)
@@ -64,6 +63,8 @@ class Model(nn.Module):
 
     def train(self, dataset):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
+        word_pad_index = dataset.word_to_index["<PAD>"]
+        tag_pad_index = dataset.tag_to_index["<PAD>"]
         for epoch in range(10):
             batches = self._split(dataset)
             random.shuffle(batches)
@@ -71,15 +72,9 @@ class Model(nn.Module):
             for X, Y in batches:
                 self.zero_grad()
                 self.hidden = self._init_hidden()
-
-                X, _ = self._sort(X)
-                lengths = [len(x) for x in X]
-                X = self(X, lengths, dataset.word_to_index["<PAD>"])
-
-                Y, _ = self._sort(Y)
-                Y = self._pad(Y, lengths, dataset.tag_to_index["<PAD>"])
-                Y = torch.tensor(Y, device=self.device)
-
+                X, lengths, _ = self._tensorize(X, word_pad_index)
+                Y, lengths, _ = self._tensorize(Y, tag_pad_index)
+                X = self(X, lengths)
                 loss = self._calc_cross_entropy(X, Y)
                 loss.backward()
                 optimizer.step()
@@ -88,22 +83,25 @@ class Model(nn.Module):
 
     def test(self, dataset):
         results = []
+        word_pad_index = dataset.word_to_index["<PAD>"]
         batches = self._split(dataset)
         for X, Y in batches:
-            X, indices = self._sort(X)
-            lengths = [len(x) for x in X]
-            X = self(X, lengths, dataset.word_to_index["<PAD>"])
-
-            Y, _ = self._sort(Y)
-            Y = self._pad(Y, lengths, dataset.tag_to_index["<PAD>"])
-            Y = torch.tensor(Y, device=self.device)
-
-            self._append(results, X, Y, indices)
+            X, lengths, indices = self._tensorize(X, word_pad_index)
+            mask = (X > 0).long()
+            X = self(X, lengths)
+            self._append(results, X, mask, indices)
         return results
 
     def _split(self, dataset):
         return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
                         zip(*[iter(dataset.Y)]*self.batch_size)))
+
+    def _tensorize(self, Z, pad_index):
+        Z, indices_before_sort = self._sort(Z)
+        lengths_after_sort = [len(z) for z in Z]
+        Z = self._pad(Z, sequence_lengths, pad_index)
+        Z = torch.tensor(Z, device=self.device)
+        return Z, lengths_after_sort, indices_before_sort
 
     def _sort(self, Z):
         indices, Z = zip(*sorted(enumerate(Z), key=lambda z: -len(z[1])))
@@ -145,8 +143,7 @@ class Model(nn.Module):
         # -1 * (-1.97 + -1.70 + -1.91 + -0.00) / 3
         return -torch.sum(X) / token_num
 
-    def _append(self, results, X, Y, indices):
-        mask = (Y > 0).long()  # TODO: Do not use Y in test
+    def _append(self, results, X, mask, indices):
         _, __results = X.max(-1)
         __results = __results * mask
         _results = [None] * len(X)
