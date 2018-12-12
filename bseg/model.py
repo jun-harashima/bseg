@@ -99,7 +99,7 @@ class Model(nn.Module):
     def _tensorize(self, Z, pad_index):
         Z, indices_before_sort = self._sort(Z)
         lengths_after_sort = [len(z) for z in Z]
-        Z = self._pad(Z, sequence_lengths, pad_index)
+        Z = self._pad(Z, lengths_after_sort, pad_index)
         Z = torch.tensor(Z, device=self.device)
         return Z, lengths_after_sort, indices_before_sort
 
