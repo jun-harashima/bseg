@@ -85,7 +85,7 @@ class Model(nn.Module):
         results = []
         word_pad_index = dataset.word_to_index["<PAD>"]
         batches = self._split(dataset)
-        for X, Y in batches:
+        for X, _ in batches:
             X, lengths, indices = self._tensorize(X, word_pad_index)
             mask = (X > 0).long()
             X = self(X, lengths)
