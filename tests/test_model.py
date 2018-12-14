@@ -10,7 +10,11 @@ from bseg.dataset import Dataset
 class TestModel(unittest.TestCase):
 
     def setUp(self):
-        self.model = Model(2, 4, 9, 6, 3)  # 9 = 8 + 1, 6 = 5 + 1 (for <PAD>)
+        word_to_index = {'<PAD>': 0, '人参': 1, 'を': 2, '切る': 3,
+                         'ざっくり': 4, '葱': 5, 'は': 6, '細く': 7, '刻む': 8}
+        tag_to_index = {'<PAD>': 0, '名詞': 1, '助詞': 2, '動詞': 3, '副詞': 4,
+                        '形容詞': 5}
+        self.model = Model(2, 4, word_to_index, tag_to_index, batch_size=3)
         self.embeddings_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
                                                          [1, 2],
                                                          [3, 4],

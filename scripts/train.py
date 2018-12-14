@@ -13,8 +13,8 @@ examples = [
 ]
 dataset = Dataset(examples)
 
-model = Model(EMBEDDING_DIM, HIDDEN_DIM, len(dataset.word_to_index),
-              len(dataset.tag_to_index), 3)
+model = Model(EMBEDDING_DIM, HIDDEN_DIM, dataset.word_to_index,
+              dataset.tag_to_index, 3)
 model.train(dataset)
 torch.save(model.state_dict(), 'pos.model')
 
