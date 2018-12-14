@@ -11,15 +11,16 @@ torch.manual_seed(1)
 
 class Model(nn.Module):
 
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, tagset_size,
-                 batch_size=1, padding_idx=0):
+    def __init__(self, embedding_dim, hidden_dim, word_to_index, tag_to_index,
+                 word_pad_index=0, tag_pad_index=0, batch_size=32):
         super(Model, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
-        self.vocab_size = vocab_size
-        self.tagset_size = tagset_size
+        self.vocab_size = len(word_to_index)
+        self.tagset_size = len(tag_to_index)
+        self.word_pad_index = word_pad_index
+        self.tag_pad_index = tag_pad_index
         self.batch_size = batch_size
-        self.padding_idx = padding_idx
         self.device = self._init_device()
         self.embeddings = self._init_embeddings()
         self.lstm = self._init_lstm()
@@ -31,7 +32,7 @@ class Model(nn.Module):
 
     def _init_embeddings(self):
         embeddings = nn.Embedding(self.vocab_size, self.embedding_dim,
-                                  self.padding_idx)
+                                  self.word_pad_index)
         return embeddings.cuda() if torch.cuda.is_available() else embeddings
 
     def _init_lstm(self):
@@ -63,8 +64,6 @@ class Model(nn.Module):
 
     def train(self, dataset):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
-        word_pad_index = dataset.word_to_index["<PAD>"]
-        tag_pad_index = dataset.tag_to_index["<PAD>"]
         for epoch in range(10):
             batches = self._split(dataset)
             random.shuffle(batches)
@@ -72,8 +71,8 @@ class Model(nn.Module):
             for X, Y in batches:
                 self.zero_grad()
                 self.hidden = self._init_hidden()
-                X, lengths, _ = self._tensorize(X, word_pad_index)
-                Y, lengths, _ = self._tensorize(Y, tag_pad_index)
+                X, lengths, _ = self._tensorize(X, self.word_pad_index)
+                Y, lengths, _ = self._tensorize(Y, self.tag_pad_index)
                 X = self(X, lengths)
                 loss = self._calc_cross_entropy(X, Y)
                 loss.backward()
@@ -83,10 +82,9 @@ class Model(nn.Module):
 
     def test(self, dataset):
         results = []
-        word_pad_index = dataset.word_to_index["<PAD>"]
         batches = self._split(dataset)
         for X, _ in batches:
-            X, lengths, indices = self._tensorize(X, word_pad_index)
+            X, lengths, indices = self._tensorize(X, self.word_pad_index)
             mask = (X > 0).long()
             X = self(X, lengths)
             self._append(results, X, mask, indices)
