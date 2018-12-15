@@ -10,11 +10,13 @@ from bseg.dataset import Dataset
 class TestModel(unittest.TestCase):
 
     def setUp(self):
-        word_to_index = {'<PAD>': 0, '人参': 1, 'を': 2, '切る': 3,
-                         'ざっくり': 4, '葱': 5, 'は': 6, '細く': 7, '刻む': 8}
-        tag_to_index = {'<PAD>': 0, '名詞': 1, '助詞': 2, '動詞': 3, '副詞': 4,
-                        '形容詞': 5}
-        self.model = Model(2, 4, word_to_index, tag_to_index, batch_size=3)
+        self.word_to_index = {'<PAD>': 0, '人参': 1, 'を': 2, '切る': 3,
+                              'ざっくり': 4, '葱': 5, 'は': 6, '細く': 7,
+                              '刻む': 8}
+        self.tag_to_index = {'<PAD>': 0, '名詞': 1, '助詞': 2, '動詞': 3,
+                             '副詞': 4, '形容詞': 5}
+        self.model = Model(2, 4, self.word_to_index, self.tag_to_index,
+                           batch_size=3)
         self.embeddings_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
                                                          [1, 2],
                                                          [3, 4],
@@ -46,11 +48,6 @@ class TestModel(unittest.TestCase):
         self.Y = ([1, 2, 3], [4, 3], [1, 2, 5, 3])
         self.lengths = [len(x) for x in self.X2]
 
-    def test___init__(self):
-        zeros = torch.zeros(1, 3, 4)
-        self.assertTrue(torch.equal(self.model.hidden[0], zeros))
-        self.assertTrue(torch.equal(self.model.hidden[1], zeros))
-
     def test__split(self):
         examples = [
             (("人参", "を", "切る"), ("名詞", "助詞", "動詞")),
@@ -59,6 +56,11 @@ class TestModel(unittest.TestCase):
         ]
         dataset = Dataset(examples)
         batches = self.model._split(dataset)
+        self.assertEqual(batches[0], (self.X1, self.Y))
+
+        model = Model(2, 4, self.word_to_index, self.tag_to_index,
+                      batch_size=4)
+        batches = model._split(dataset)
         self.assertEqual(batches[0], (self.X1, self.Y))
 
     def test__sort(self):
@@ -82,6 +84,7 @@ class TestModel(unittest.TestCase):
         self.assertTrue(torch.equal(X5.batch_sizes, self.X5.batch_sizes))
 
     def test__lstm(self):
+        self.model.hidden = self.model._init_hidden()
         X6, hidden = self.model._lstm(self.X5)
         # (9, 4) is length of packed sequence and dimension of hidden
         self.assertEqual(X6.data.shape, (9, 4))
@@ -89,6 +92,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(hidden[1].shape, (1, 3, 4))
 
     def test__unpack(self):
+        self.model.hidden = self.model._init_hidden()
         X6, hidden = self.model._lstm(self.X5)
         X7 = self.model._unpack(X6)
         # batch size, sequence length, hidden size

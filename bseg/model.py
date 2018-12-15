@@ -25,7 +25,6 @@ class Model(nn.Module):
         self.embeddings = self._init_embeddings()
         self.lstm = self._init_lstm()
         self.hidden2tag = self._init_hidden2tag()
-        self.hidden = self._init_hidden()
 
     def _init_device(self):
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -84,6 +83,7 @@ class Model(nn.Module):
         results = []
         batches = self._split(dataset)
         for X, _ in batches:
+            self.hidden = self._init_hidden()
             X, lengths, indices = self._tensorize(X, self.word_pad_index)
             mask = (X > 0).long()
             X = self(X, lengths)
@@ -91,6 +91,8 @@ class Model(nn.Module):
         return results
 
     def _split(self, dataset):
+        if len(dataset.X) < self.batch_size:
+            self.batch_size = len(dataset.X)
         return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
                         zip(*[iter(dataset.Y)]*self.batch_size)))
 
