@@ -14,7 +14,7 @@ examples = [
 dataset = Dataset(examples)
 
 model = Model(EMBEDDING_DIM, HIDDEN_DIM, dataset.word_to_index,
-              dataset.tag_to_index, 3)
+              dataset.tag_to_index, batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'pos.model')
 
