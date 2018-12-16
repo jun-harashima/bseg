@@ -87,7 +87,7 @@ class Model(nn.Module):
             X, lengths, indices = self._tensorize(X, self.word_pad_index)
             mask = (X > 0).long()
             X = self(X, lengths)
-            self._append(results, X, mask, indices)
+            self._extend(results, X, mask, indices)
         return results
 
     def _split(self, dataset):
@@ -143,10 +143,10 @@ class Model(nn.Module):
         # -1 * (-1.97 + -1.70 + -1.91 + -0.00) / 3
         return -torch.sum(X) / token_num
 
-    def _append(self, results, X, mask, indices):
+    def _extend(self, results, X, mask, indices):
         _, __results = X.max(-1)
         __results = __results * mask
         _results = [None] * len(X)
         for i, index in enumerate(indices):
             _results[index] = [y for y in __results[i].tolist() if y != 0]
-        results.append(_results)
+        results.extend(_results)
