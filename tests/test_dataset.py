@@ -12,17 +12,19 @@ class TestDataset(unittest.TestCase):
     def test__make_index(self):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)
         self.assertEqual(word_to_index,
-                         {"<PAD>": 0, "人参": 1, "を": 2, "切る": 3, "葱": 4})
+                         {"<PAD>": 0, "<UNK>": 1, "人参": 2, "を": 3,
+                          "切る": 4, "葱": 5})
         self.assertEqual(tag_to_index,
-                         {"<PAD>": 0, "名詞": 1, "助詞": 2, "動詞": 3})
+                         {"<PAD>": 0, "<UNK>": 1, "名詞": 2, "助詞": 3,
+                          "動詞": 4})
 
     def test__degitize(self):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)
         X, Y = self.dataset._degitize(self.examples)
-        self.assertTrue(X[0], [1, 2, 3])
-        self.assertTrue(Y[0], [1, 2, 3])
-        self.assertTrue(X[1], [4, 2, 3])
-        self.assertTrue(Y[1], [1, 2, 3])
+        self.assertTrue(X[0], [2, 3, 4])
+        self.assertTrue(Y[0], [2, 3, 4])
+        self.assertTrue(X[1], [5, 3, 4])
+        self.assertTrue(Y[1], [2, 3, 4])
 
 
 if __name__ == "__main__":
