@@ -37,16 +37,16 @@ class Model(nn.Module):
         return embeddings.cuda() if torch.cuda.is_available() else embeddings
 
     def _init_lstm(self):
-        lstm = nn.LSTM(self.embedding_dim, self.hidden_dim)
+        lstm = nn.LSTM(self.embedding_dim, self.hidden_dim, bidirectional=True)
         return lstm.cuda() if torch.cuda.is_available() else lstm
 
     def _init_hidden2tag(self):
-        hidden2tag = nn.Linear(self.hidden_dim, self.tagset_size)
+        hidden2tag = nn.Linear(self.hidden_dim * 2, self.tagset_size)
         return hidden2tag.cuda() if torch.cuda.is_available() else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        zeros = torch.zeros(1, self.batch_size, self.hidden_dim,
+        zeros = torch.zeros(2, self.batch_size, self.hidden_dim,
                             device=self.device)
         return (zeros, zeros)
 
