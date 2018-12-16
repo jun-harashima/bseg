@@ -11,8 +11,10 @@ torch.manual_seed(1)
 
 class Model(nn.Module):
 
+    EPOCH_NUM = 100
+
     def __init__(self, embedding_dim, hidden_dim, word_to_index, tag_to_index,
-                 word_pad_index=0, tag_pad_index=0, batch_size=32):
+                 word_pad_index=0, tag_pad_index=0, batch_size=16):
         super(Model, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
@@ -63,8 +65,8 @@ class Model(nn.Module):
 
     def train(self, dataset, dev_dataset):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
-        for epoch in range(10):
-            if epoch % 5 == 0:
+        for epoch in range(self.EPOCH_NUM):
+            if epoch % 10 == 0:
                 self.eval(dev_dataset)
             batches = self._split(dataset)
             random.shuffle(batches)
