@@ -87,21 +87,21 @@ class TestModel(unittest.TestCase):
     def test__lstm(self):
         self.model.hidden = self.model._init_hidden()
         X6, hidden = self.model._lstm(self.X5)
-        # (9, 4) is length of packed sequence and dimension of hidden
-        self.assertEqual(X6.data.shape, (9, 4))
-        self.assertEqual(hidden[0].shape, (1, 3, 4))
-        self.assertEqual(hidden[1].shape, (1, 3, 4))
+        # (9, 8) is length of packed sequence and dimension of hidden
+        self.assertEqual(X6.data.shape, (9, 8))
+        self.assertEqual(hidden[0].shape, (2, 3, 4))
+        self.assertEqual(hidden[1].shape, (2, 3, 4))
 
     def test__unpack(self):
         self.model.hidden = self.model._init_hidden()
         X6, hidden = self.model._lstm(self.X5)
         X7 = self.model._unpack(X6)
         # batch size, sequence length, hidden size
-        self.assertEqual(X7[0].data.shape, torch.Size([3, 4, 4]))
+        self.assertEqual(X7[0].data.shape, torch.Size([3, 4, 8]))
         # padded values should be zeros
-        self.assertTrue(torch.equal(X7[0].data[1][3], torch.zeros(4)))
-        self.assertTrue(torch.equal(X7[0].data[2][2], torch.zeros(4)))
-        self.assertTrue(torch.equal(X7[0].data[2][3], torch.zeros(4)))
+        self.assertTrue(torch.equal(X7[0].data[1][3], torch.zeros(8)))
+        self.assertTrue(torch.equal(X7[0].data[2][2], torch.zeros(8)))
+        self.assertTrue(torch.equal(X7[0].data[2][3], torch.zeros(8)))
         # batch sizes
         self.assertTrue(torch.equal(X7[1], torch.tensor([4, 3, 2])))
 
