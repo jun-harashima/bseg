@@ -61,9 +61,11 @@ class Model(nn.Module):
         X = X.view(self.batch_size, lengths[0], self.tagset_size)
         return X
 
-    def train(self, dataset):
+    def train(self, dataset, dev_dataset):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(10):
+            if epoch % 5 == 0:
+                self.eval(dev_dataset)
             batches = self._split(dataset)
             random.shuffle(batches)
             accumulated_loss = 0
@@ -89,6 +91,18 @@ class Model(nn.Module):
             X = self(X, lengths)
             self._extend(results, X, mask, indices)
         return results
+
+    def eval(self, dataset):
+        ok = 0
+        ng = 0
+        results = self.test(dataset)
+        for y1, y2 in zip(dataset.Y, results):
+            for _y1, _y2 in zip(y1, y2):
+                if _y1 == _y2:
+                    ok += 1
+                else:
+                    ng += 1
+        print(ok / (ok + ng))
 
     def _split(self, dataset):
         if len(dataset.X) < self.batch_size:
