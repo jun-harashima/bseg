@@ -65,9 +65,7 @@ class Model(nn.Module):
 
     def train(self, dataset, dev_dataset):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
-        for epoch in range(self.EPOCH_NUM):
-            if epoch % 10 == 0:
-                self.eval(dev_dataset)
+        for epoch in range(1, self.EPOCH_NUM + 1):
             batches = self._split(dataset)
             random.shuffle(batches)
             accumulated_loss = 0
@@ -82,6 +80,8 @@ class Model(nn.Module):
                 optimizer.step()
                 accumulated_loss += loss
             print("epoch: {} loss: {}".format(epoch, accumulated_loss))
+            if epoch % 10 == 0:
+                self.eval(dev_dataset)
 
     def test(self, dataset):
         results = []
