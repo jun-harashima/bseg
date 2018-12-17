@@ -63,10 +63,10 @@ class Model(nn.Module):
         X = X.view(self.batch_size, lengths[0], self.tagset_size)
         return X
 
-    def train(self, dataset, dev_dataset=None):
+    def train(self, train_set, dev_set=None):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(1, self.EPOCH_NUM + 1):
-            batches = self._split(dataset)
+            batches = self._split(train_set)
             random.shuffle(batches)
             loss_sum = 0
             for X, Y in batches:
@@ -74,33 +74,33 @@ class Model(nn.Module):
                 self.hidden = self._init_hidden()
                 X, lengths, _ = self._tensorize(X, self.word_pad_index)
                 Y, lengths, _ = self._tensorize(Y, self.tag_pad_index)
-                X = self(X, lengths)
-                loss = self._calc_cross_entropy(X, Y)
+                Y_hat = self(X, lengths)
+                loss = self._calc_cross_entropy(Y_hat, Y)
                 loss.backward()
                 optimizer.step()
                 loss_sum += loss
             print('epoch {:>3}\tloss {:6.2f}'.format(epoch, loss_sum))
-            if dev_dataset is not None and epoch % 10 == 0:
-                self.eval(dev_dataset)
+            if dev_set is not None and epoch % 10 == 0:
+                self.eval(dev_set)
 
-    def test(self, dataset):
+    def test(self, test_set):
         results = []
-        batches = self._split(dataset)
+        batches = self._split(test_set)
         for X, _ in batches:
             self.hidden = self._init_hidden()
             X, lengths, indices = self._tensorize(X, self.word_pad_index)
             mask = (X > 0).long()
-            X = self(X, lengths)
-            self._extend(results, X, mask, indices)
+            Y_hat = self(X, lengths)
+            self._extend(results, Y_hat, mask, indices)
         return results
 
-    def eval(self, dataset):
+    def eval(self, test_set):
         ok = 0
         ng = 0
-        results = self.test(dataset)
-        for y1, y2 in zip(dataset.Y, results):
-            for _y1, _y2 in zip(y1, y2):
-                if _y1 == _y2:
+        results = self.test(test_set)
+        for y, y_hat in zip(test_set.Y, results):
+            for _y, _y_hat in zip(y, y_hat):
+                if _y == _y_hat:
                     ok += 1
                 else:
                     ng += 1
@@ -159,10 +159,10 @@ class Model(nn.Module):
         # -1 * (-1.97 + -1.70 + -1.91 + -0.00) / 3
         return -torch.sum(X) / token_num
 
-    def _extend(self, results, X, mask, indices):
-        _, __results = X.max(-1)
+    def _extend(self, results, Y_hat, mask, indices):
+        _, __results = Y_hat.max(-1)
         __results = __results * mask
-        _results = [None] * len(X)
+        _results = [None] * len(Y_hat)
         for i, index in enumerate(indices):
             _results[index] = [y for y in __results[i].tolist() if y != 0]
         results.extend(_results)
