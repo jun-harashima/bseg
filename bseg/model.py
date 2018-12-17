@@ -63,12 +63,12 @@ class Model(nn.Module):
         X = X.view(self.batch_size, lengths[0], self.tagset_size)
         return X
 
-    def train(self, dataset, dev_dataset):
+    def train(self, dataset, dev_dataset=None):
         optimizer = optim.SGD(self.parameters(), lr=0.1)
         for epoch in range(1, self.EPOCH_NUM + 1):
             batches = self._split(dataset)
             random.shuffle(batches)
-            accumulated_loss = 0
+            loss_sum = 0
             for X, Y in batches:
                 self.zero_grad()
                 self.hidden = self._init_hidden()
@@ -78,9 +78,9 @@ class Model(nn.Module):
                 loss = self._calc_cross_entropy(X, Y)
                 loss.backward()
                 optimizer.step()
-                accumulated_loss += loss
-            print("epoch: {} loss: {}".format(epoch, accumulated_loss))
-            if epoch % 10 == 0:
+                loss_sum += loss
+            print('epoch {:>3}\tloss {:6.2f}'.format(epoch, loss_sum))
+            if dev_dataset is not None and epoch % 10 == 0:
                 self.eval(dev_dataset)
 
     def test(self, dataset):
