@@ -5,10 +5,9 @@ class TwoInputDataset(Dataset):
 
     def __init__(self, examples, x1_to_index=None, x2_to_index=None,
                  y_to_index=None):
-        super(TwoInputDataset, self).__init__()
         self.x1_to_index, self.x2_to_index, self.y_to_index = \
             x1_to_index, x2_to_index, y_to_index
-        if all([x1_to_index, x2_to_index, y_to_index]):
+        if not all([x1_to_index, x2_to_index, y_to_index]):
             self.x1_to_index, self.x2_to_index, self.y_to_index = \
                 self._make_index(examples)
         self.X1, self.X2, self.Y = self._degitize(examples)
