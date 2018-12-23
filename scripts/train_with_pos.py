@@ -1,7 +1,7 @@
 import torch
 from model import Model
 from with_pos import WithPos
-from dataset import Dataset
+from two_input_dataset import TwoInputDataset
 
 
 EMBEDDING_DIM = 2
@@ -13,10 +13,10 @@ examples = [
     (("葱", "は", "細く", "刻む"), ("名詞", "助詞", "形容詞", "動詞"),
      ("B-S", "B-I", "B-M", "B-P"))
 ]
-dataset = Dataset(examples)
+dataset = TwoInputDataset(examples)
 
-model = WithPos(EMBEDDING_DIM, HIDDEN_DIM, dataset.word_to_index,
-                dataset.tag_to_index, batch_size=3)
+model = WithPos(EMBEDDING_DIM, HIDDEN_DIM, dataset.x1_to_index,
+                dataset.x2_to_index, dataset.y_to_index, batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'with_pos.model')
 
@@ -27,6 +27,6 @@ examples = [
     (("大根", "は", "ざっくり", "刻む"), ("名詞", "助詞", "形容詞", "動詞"),
      ("B-S", "B-I", "B-M", "B-P"))
 ]
-dataset = Dataset(examples)
+dataset = TwoInputDataset(examples)
 results = model.test(dataset)
 print(results)
