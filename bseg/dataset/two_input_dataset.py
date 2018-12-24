@@ -1,7 +1,7 @@
-from bseg.dataset import Dataset
+from bseg.dataset.base_dataset import BaseDataset
 
 
-class TwoInputDataset(Dataset):
+class TwoInputDataset(BaseDataset):
 
     def __init__(self, examples, x1_to_index=None, x2_to_index=None,
                  y_to_index=None):

@@ -1,4 +1,7 @@
-class Dataset:
+from bseg.dataset.base_dataset import BaseDataset
+
+
+class OneInputDataset(BaseDataset):
 
     def __init__(self, examples, word_to_index=None, tag_to_index=None):
         self.word_to_index, self.tag_to_index = word_to_index, tag_to_index
@@ -15,15 +18,6 @@ class Dataset:
             for tag in tags:
                 self._add_index(tag, tag_to_index)
         return word_to_index, tag_to_index
-
-    def _add_index(self, token, token_to_index):
-        if token not in token_to_index:
-            token_to_index[token] = len(token_to_index)
-
-    def _get_index(self, token, token_to_index):
-        if token not in token_to_index:
-            return token_to_index["<UNK>"]
-        return token_to_index[token]
 
     def _degitize(self, examples):
         X = []
