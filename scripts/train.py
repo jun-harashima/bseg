@@ -1,6 +1,6 @@
 import torch
 from model import Model
-from dataset import Dataset
+from one_input_dataset import OneInputDataset
 
 
 EMBEDDING_DIM = 2
@@ -11,7 +11,7 @@ examples = [
     (("ざっくり", "切る"), ("副詞", "動詞")),
     (("葱", "は", "細く", "刻む"), ("名詞", "助詞", "形容詞", "動詞"))
 ]
-dataset = Dataset(examples)
+dataset = OneInputDataset(examples)
 
 model = Model(EMBEDDING_DIM, HIDDEN_DIM, dataset.word_to_index,
               dataset.tag_to_index, batch_size=3)
@@ -24,6 +24,6 @@ examples = [
     (("細く", "切る"), ("副詞", "動詞")),
     (("大根", "は", "ざっくり", "刻む"), ("名詞", "助詞", "形容詞", "動詞"))
 ]
-dataset = Dataset(examples)
+dataset = OneInputDataset(examples)
 results = model.test(dataset)
 print(results)

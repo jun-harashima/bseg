@@ -1,13 +1,13 @@
 import unittest
-from bseg.dataset import Dataset
+from bseg.dataset.one_input_dataset import OneInputDataset
 
 
-class TestDataset(unittest.TestCase):
+class TestOneInputDataset(unittest.TestCase):
 
     def setUp(self):
         self.examples = [(("人参", "を", "切る"), ("名詞", "助詞", "動詞")),
                          (("葱", "を", "切る"), ("名詞", "助詞", "動詞"))]
-        self.dataset = Dataset(self.examples)
+        self.dataset = OneInputDataset(self.examples)
 
     def test__make_index(self):
         word_to_index, tag_to_index = self.dataset._make_index(self.examples)

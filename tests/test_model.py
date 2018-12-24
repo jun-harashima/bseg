@@ -4,7 +4,7 @@ import torch
 from torch.nn.parameter import Parameter
 from torch.nn.utils.rnn import PackedSequence
 from bseg.model import Model
-from bseg.dataset import Dataset
+from bseg.dataset.one_input_dataset import OneInputDataset
 
 
 class TestModel(unittest.TestCase):
@@ -55,7 +55,7 @@ class TestModel(unittest.TestCase):
             (("ざっくり", "切る"), ("副詞", "動詞")),
             (("葱", "は", "細く", "刻む"), ("名詞", "助詞", "形容詞", "動詞"))
         ]
-        dataset = Dataset(examples)
+        dataset = OneInputDataset(examples)
         batches = self.model._split(dataset)
         self.assertEqual(batches[0], (self.X1, self.Y))
 
