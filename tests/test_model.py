@@ -57,12 +57,12 @@ class TestModel(unittest.TestCase):
         ]
         dataset = OneInputDataset(examples)
         batches = self.model._split(dataset)
-        self.assertEqual(batches[0], (self.Y, self.X1))
+        self.assertEqual(batches[0], (self.X1, self.Y))
 
         model = Model(2, 4, self.word_to_index, self.tag_to_index,
                       batch_size=4)
         batches = model._split(dataset)
-        self.assertEqual(batches[0], (self.Y, self.X1))
+        self.assertEqual(batches[0], (self.X1, self.Y))
 
     def test__sort(self):
         X2, indices = self.model._sort(self.X1)
