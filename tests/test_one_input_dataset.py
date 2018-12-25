@@ -22,15 +22,19 @@ class TestOneInputDataset(unittest.TestCase):
                           '切る': 4, '葱': 5})
 
     def test__degitize(self):
-        tags = [tag for example in self.examples for tag in example[0]]
-        words = [word for example in self.examples for word in example[1]]
-        self.dataset.tag_to_index = self.dataset._make_index(tags)
-        self.dataset.word_to_index = self.dataset._make_index(words)
-        X, Y = self.dataset._degitize(self.examples)
-        self.assertTrue(X[0], [2, 3, 4])
+        tags_set = [example[0] for example in self.examples]
+        tags = [tag for tags in tags_set for tag in tags]
+        tag_to_index = self.dataset._make_index(tags)
+        Y = self.dataset._degitize(tags_set, tag_to_index)
         self.assertTrue(Y[0], [2, 3, 4])
-        self.assertTrue(X[1], [5, 3, 4])
         self.assertTrue(Y[1], [2, 3, 4])
+
+        words_set = [example[1] for example in self.examples]
+        words = [word for words in words_set for word in words]
+        word_to_index = self.dataset._make_index(words)
+        X = self.dataset._degitize(words_set, word_to_index)
+        self.assertTrue(X[0], [2, 3, 4])
+        self.assertTrue(X[1], [5, 3, 4])
 
 
 if __name__ == '__main__':
