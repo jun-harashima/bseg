@@ -10,11 +10,11 @@ from bseg.dataset.one_input_dataset import OneInputDataset
 class TestModel(unittest.TestCase):
 
     def setUp(self):
+        self.tag_to_index = {'<PAD>': 0, '<UNK>': 1, '名詞': 2, '助詞': 3,
+                             '動詞': 4, '副詞': 5, '形容詞': 6}
         self.word_to_index = {'<PAD>': 0, '<UNK>': 1, '人参': 2, 'を': 3,
                               '切る': 4, 'ざっくり': 5, '葱': 6, 'は': 7,
                               '細く': 8, '刻む': 9}
-        self.tag_to_index = {'<PAD>': 0, '<UNK>': 1, '名詞': 2, '助詞': 3,
-                             '動詞': 4, '副詞': 5, '形容詞': 6}
         self.model = Model(2, 4, self.word_to_index, self.tag_to_index,
                            batch_size=3)
         self.embeddings_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
@@ -51,18 +51,18 @@ class TestModel(unittest.TestCase):
 
     def test__split(self):
         examples = [
-            (("人参", "を", "切る"), ("名詞", "助詞", "動詞")),
-            (("ざっくり", "切る"), ("副詞", "動詞")),
-            (("葱", "は", "細く", "刻む"), ("名詞", "助詞", "形容詞", "動詞"))
+            (('名詞', '助詞', '動詞'), ('人参', 'を', '切る')),
+            (('副詞', '動詞'), ('ざっくり', '切る')),
+            (('名詞', '助詞', '形容詞', '動詞'), ('葱', 'は', '細く', '刻む'))
         ]
         dataset = OneInputDataset(examples)
         batches = self.model._split(dataset)
-        self.assertEqual(batches[0], (self.X1, self.Y))
+        self.assertEqual(batches[0], (self.Y, self.X1))
 
         model = Model(2, 4, self.word_to_index, self.tag_to_index,
                       batch_size=4)
         batches = model._split(dataset)
-        self.assertEqual(batches[0], (self.X1, self.Y))
+        self.assertEqual(batches[0], (self.Y, self.X1))
 
     def test__sort(self):
         X2, indices = self.model._sort(self.X1)
@@ -115,5 +115,5 @@ class TestModel(unittest.TestCase):
     #     self.assertTrue(torch.equal(loss, torch.tensor(1.86)))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
