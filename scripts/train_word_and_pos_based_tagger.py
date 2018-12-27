@@ -1,5 +1,5 @@
 import torch
-from bseg.with_pos import WithPos
+from bseg.model.word_and_pos_based_tagger import WordAndPosBasedTagger
 from bseg.dataset.two_input_dataset import TwoInputDataset
 
 
@@ -16,8 +16,9 @@ examples = [
 ]
 dataset = TwoInputDataset(examples)
 
-model = WithPos(EMBEDDING_DIM, HIDDEN_DIM, E_pos, H_pos, dataset.tag_to_index,
-                dataset.word_to_index, dataset.pos_to_index, batch_size=3)
+model = WordAndPosBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, E_pos, H_pos,
+                              dataset.tag_to_index, dataset.word_to_index,
+                              dataset.pos_to_index, batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'with_pos.model')
 

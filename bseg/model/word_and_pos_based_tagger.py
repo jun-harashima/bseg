@@ -9,14 +9,14 @@ import random
 torch.manual_seed(1)
 
 
-class WithPos(nn.Module):
+class WordAndPosBasedTagger(nn.Module):
 
     EPOCH_NUM = 100
 
     def __init__(self, embedding_dim, hidden_dim, E_pos, H_pos, tag_to_index,
                  word_to_index, pos_to_index, tag_pad_index=0,
                  word_pad_index=0, pos_pad_index=0, batch_size=16):
-        super(WithPos, self).__init__()
+        super(WordAndPosBasedTagger, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.E_pos = E_pos  # embedding dimension for POS
