@@ -76,20 +76,23 @@ class WordBasedTagger(nn.Module):
         for epoch in range(1, self.EPOCH_NUM + 1):
             batches = self._split(train_set)
             random.shuffle(batches)
-            loss_sum = 0
-            for X, Y in batches:
-                self.zero_grad()
-                self.hidden = self._init_hidden()
-                X, lengths, _ = self._tensorize(X, self.word_pad_index)
-                Y, lengths, _ = self._tensorize(Y, self.tag_pad_index)
-                Y_hat = self(X, lengths)
-                loss = self._calc_cross_entropy(Y_hat, Y)
-                loss.backward()
-                optimizer.step()
-                loss_sum += loss
-            print('epoch {:>3}\tloss {:6.2f}'.format(epoch, loss_sum))
-            if dev_set is not None and epoch % 10 == 0:
-                self.eval(dev_set)
+            self._train(optimizer, batches, epoch, dev_set)
+
+    def _train(self, optimizer, batches, epoch, dev_set):
+        loss_sum = 0
+        for X, Y in batches:
+            self.zero_grad()
+            self.hidden = self._init_hidden()
+            X, lengths, _ = self._tensorize(X, self.word_pad_index)
+            Y, lengths, _ = self._tensorize(Y, self.tag_pad_index)
+            Y_hat = self(X, lengths)
+            loss = self._calc_cross_entropy(Y_hat, Y)
+            loss.backward()
+            optimizer.step()
+            loss_sum += loss
+        print('epoch {:>3}\tloss {:6.2f}'.format(epoch, loss_sum))
+        if dev_set is not None and epoch % 10 == 0:
+            self.eval(dev_set)
 
     def test(self, test_set):
         results = []
