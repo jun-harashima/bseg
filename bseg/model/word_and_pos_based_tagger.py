@@ -11,12 +11,13 @@ torch.manual_seed(1)
 
 class WordAndPosBasedTagger(WordBasedTagger):
 
-    def __init__(self, embedding_dim, hidden_dim, E_pos, H_pos, tag_to_index,
-                 word_to_index, pos_to_index, tag_pad_index=0,
-                 word_pad_index=0, pos_pad_index=0, batch_size=16):
-        self.E_pos = E_pos  # embedding dimension for POS
-        self.H_pos = H_pos  # hidden dimension for POS
-        self.P = len(pos_to_index)
+    def __init__(self, embedding_dim, hidden_dim, pos_embedding_dim,
+                 pos_hidden_dim, tag_to_index, word_to_index, pos_to_index,
+                 tag_pad_index=0, word_pad_index=0, pos_pad_index=0,
+                 batch_size=16):
+        self.pos_embedding_dim = pos_embedding_dim
+        self.pos_hidden_dim = pos_hidden_dim
+        self.posset_size = len(pos_to_index)
         self.pos_pad_index = word_pad_index
         super(WordAndPosBasedTagger, self).__init__(embedding_dim, hidden_dim,
                                                     word_to_index,
@@ -24,22 +25,25 @@ class WordAndPosBasedTagger(WordBasedTagger):
         self.pos_embeddings = self._init_pos_embeddings()
 
     def _init_pos_embeddings(self):
-        embeddings = nn.Embedding(self.P, self.E_pos, self.pos_pad_index)
+        embeddings = nn.Embedding(self.posset_size, self.pos_embedding_dim,
+                                  self.pos_pad_index)
         return embeddings.cuda() if torch.cuda.is_available() else embeddings
 
     def _init_lstm(self):
-        lstm = nn.LSTM(self.embedding_dim + self.E_pos,
-                       self.hidden_dim + self.H_pos, bidirectional=True)
+        lstm = nn.LSTM(self.embedding_dim + self.pos_embedding_dim,
+                       self.hidden_dim + self.pos_hidden_dim,
+                       bidirectional=True)
         return lstm.cuda() if torch.cuda.is_available() else lstm
 
     def _init_hidden2tag(self):
-        hidden2tag = nn.Linear((self.hidden_dim + self.H_pos) * 2,
+        hidden2tag = nn.Linear((self.hidden_dim + self.pos_hidden_dim) * 2,
                                self.tagset_size)
         return hidden2tag.cuda() if torch.cuda.is_available() else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        zeros = torch.zeros(2, self.batch_size, (self.hidden_dim + self.H_pos),
+        zeros = torch.zeros(2, self.batch_size,
+                            (self.hidden_dim + self.pos_hidden_dim),
                             device=self.device)
         return (zeros, zeros)
 

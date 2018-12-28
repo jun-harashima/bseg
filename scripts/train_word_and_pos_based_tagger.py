@@ -5,8 +5,8 @@ from bseg.dataset.two_input_dataset import TwoInputDataset
 
 EMBEDDING_DIM = 2
 HIDDEN_DIM = 4
-E_pos = 2
-H_pos = 4
+POS_EMBEDDING_DIM = 2
+POS_HIDDEN_DIM = 4
 
 examples = [
     (('B-S', 'B-I', 'B-P'), ('人参', 'を', '切る'), ('名詞', '助詞', '動詞')),
@@ -16,9 +16,10 @@ examples = [
 ]
 dataset = TwoInputDataset(examples)
 
-model = WordAndPosBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, E_pos, H_pos,
-                              dataset.tag_to_index, dataset.word_to_index,
-                              dataset.pos_to_index, batch_size=3)
+model = WordAndPosBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, POS_EMBEDDING_DIM,
+                              POS_HIDDEN_DIM, dataset.tag_to_index,
+                              dataset.word_to_index, dataset.pos_to_index,
+                              batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'with_pos.model')
 
