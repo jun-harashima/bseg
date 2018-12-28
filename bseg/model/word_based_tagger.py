@@ -23,26 +23,30 @@ class WordBasedTagger(nn.Module):
         self.batch_size = batch_size
         self.word_pad_index = word_pad_index
         self.tag_pad_index = tag_pad_index
+        self.use_cuda = self._init_use_cuda()
         self.device = self._init_device()
         self.embeddings = self._init_embeddings()
         self.lstm = self._init_lstm()
         self.hidden2tag = self._init_hidden2tag()
 
+    def _init_use_cuda(self):
+        return torch.cuda.is_available()
+
     def _init_device(self):
-        return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        return torch.device('cuda' if self.use_cuda else 'cpu')
 
     def _init_embeddings(self):
         embeddings = nn.Embedding(self.vocab_size, self.embedding_dim,
                                   self.word_pad_index)
-        return embeddings.cuda() if torch.cuda.is_available() else embeddings
+        return embeddings.cuda() if self.use_cuda else embeddings
 
     def _init_lstm(self):
         lstm = nn.LSTM(self.embedding_dim, self.hidden_dim, bidirectional=True)
-        return lstm.cuda() if torch.cuda.is_available() else lstm
+        return lstm.cuda() if self.use_cuda else lstm
 
     def _init_hidden2tag(self):
         hidden2tag = nn.Linear(self.hidden_dim * 2, self.tagset_size)
-        return hidden2tag.cuda() if torch.cuda.is_available() else hidden2tag
+        return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
