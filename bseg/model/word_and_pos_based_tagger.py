@@ -24,20 +24,20 @@ class WordAndPosBasedTagger(WordBasedTagger):
         self.pos_embeddings = self._init_pos_embeddings()
 
     def _init_pos_embeddings(self):
-        embeddings = nn.Embedding(self.posset_size, self.pos_embedding_dim,
-                                  self.pos_pad_index)
-        return embeddings.cuda() if torch.cuda.is_available() else embeddings
+        pos_embeddings = nn.Embedding(self.posset_size, self.pos_embedding_dim,
+                                      self.pos_pad_index)
+        return pos_embeddings.cuda() if self.use_cuda else pos_embeddings
 
     def _init_lstm(self):
         lstm = nn.LSTM(self.embedding_dim + self.pos_embedding_dim,
                        self.hidden_dim + self.pos_hidden_dim,
                        bidirectional=True)
-        return lstm.cuda() if torch.cuda.is_available() else lstm
+        return lstm.cuda() if self.use_cuda else lstm
 
     def _init_hidden2tag(self):
         hidden2tag = nn.Linear((self.hidden_dim + self.pos_hidden_dim) * 2,
                                self.tagset_size)
-        return hidden2tag.cuda() if torch.cuda.is_available() else hidden2tag
+        return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
@@ -80,7 +80,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
         for X, X2, _ in batches:
             self.hidden = self._init_hidden()
             X, lengths, indices = self._tensorize(X, self.word_pad_index)
-            X2, lengths, indices2 = self._tensorize(X2, self.pos_pad_index)
+            X2, _, _ = self._tensorize(X2, self.pos_pad_index)
             mask = (X > 0).long()
             Y_hat = self(X, X2, lengths)
             self._extend(results, Y_hat, mask, indices)
@@ -94,4 +94,4 @@ class WordAndPosBasedTagger(WordBasedTagger):
                         zip(*[iter(dataset.Y)]*self.batch_size)))
 
     def _pos_embed(self, X2):
-        return self.embeddings(X2)
+        return self.pos_embeddings(X2)
