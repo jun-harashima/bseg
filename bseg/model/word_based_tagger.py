@@ -52,6 +52,10 @@ class WordBasedTagger(nn.Module):
 
     def forward(self, X, lengths):
         X = self._embed(X)
+        X = self._forward(X, lengths)
+        return X
+
+    def _forward(self, X, lengths):
         X = self._pack(X, lengths)
         X, self.hidden = self._lstm(X)
         X, _ = self._unpack(X)

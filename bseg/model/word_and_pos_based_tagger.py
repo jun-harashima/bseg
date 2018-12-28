@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import random
 from bseg.model.word_based_tagger import WordBasedTagger
@@ -51,15 +50,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
         X = self._embed(X)
         X2 = self._pos_embed(X2)
         X = torch.cat((X, X2), 2)
-        X = self._pack(X, lengths)
-        X, self.hidden = self._lstm(X)
-        X, _ = self._unpack(X)
-        X = X.contiguous().view(-1, X.shape[2])
-        # Note that hidden2tag returns values also for padded elements. We
-        # ignore them when computing our loss.
-        X = self.hidden2tag(X)
-        X = F.log_softmax(X, dim=1)
-        X = X.view(self.batch_size, lengths[0], self.tagset_size)
+        X = self._forward(X, lengths)
         return X
 
     def train(self, train_set, dev_set=None):
