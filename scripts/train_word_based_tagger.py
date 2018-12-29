@@ -1,6 +1,6 @@
 import torch
-from model import Model
-from one_input_dataset import OneInputDataset
+from bseg.model.word_based_tagger import WordBasedTagger
+from bseg.dataset.one_input_dataset import OneInputDataset
 
 
 EMBEDDING_DIM = 2
@@ -13,12 +13,12 @@ examples = [
 ]
 dataset = OneInputDataset(examples)
 
-model = Model(EMBEDDING_DIM, HIDDEN_DIM, dataset.word_to_index,
-              dataset.tag_to_index, batch_size=3)
+model = WordBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, dataset.word_to_index,
+                        dataset.tag_to_index, batch_size=3)
 model.train(dataset)
-torch.save(model.state_dict(), 'pos.model')
+torch.save(model.state_dict(), 'word_based_tagger.model')
 
-model.load_state_dict(torch.load('pos.model'))
+model.load_state_dict(torch.load('word_based_tagger.model'))
 examples = [
     (('名詞', '助詞', '動詞'), ('葱', 'を', '切る')),
     (('副詞', '動詞'), ('細く', '切る')),
