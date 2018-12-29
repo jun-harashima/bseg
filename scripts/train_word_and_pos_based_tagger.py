@@ -21,9 +21,9 @@ model = WordAndPosBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, POS_EMBEDDING_DIM,
                               dataset.word_to_index, dataset.pos_to_index,
                               batch_size=3)
 model.train(dataset)
-torch.save(model.state_dict(), 'with_pos.model')
+torch.save(model.state_dict(), 'word_and_pos_based_tagger.model')
 
-model.load_state_dict(torch.load('with_pos.model'))
+model.load_state_dict(torch.load('word_and_pos_based_tagger.model'))
 examples = [
     (('B-S', 'B-I', 'B-P'), ('葱', 'を', '切る'), ('名詞', '助詞', '動詞')),
     (('B-M', 'B-P'), ('細く', '切る'), ('副詞', '動詞')),
