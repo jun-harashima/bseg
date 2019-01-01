@@ -25,6 +25,8 @@ def write_example(knp_file):
                     continue
                 results[-1] = re.sub(r'/N$', r'/Y', results[-1])
             elif line == 'EOS\n':
+                if len(results) == 0:
+                    continue
                 results[-1] = re.sub(r'/N$', r'/Y', results[-1])
                 print(' '.join(results))
                 results = []
