@@ -13,13 +13,6 @@ class WordAndPosBasedTagger(WordBasedTagger):
                                                     hidden_dims, tag_num,
                                                     token_nums)
 
-    def _init_hidden(self):
-        # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        zeros = torch.zeros(2, self.batch_size,
-                            (self.hidden_dims[0] + self.hidden_dims[1]),
-                            device=self.device)
-        return (zeros, zeros)
-
     def forward(self, X, X2, lengths):
         X = self._embed(X)
         X2 = self._pos_embed(X2)
