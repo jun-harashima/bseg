@@ -9,12 +9,12 @@ torch.manual_seed(1)
 class WordAndPosBasedTagger(WordBasedTagger):
 
     def __init__(self, embedding_dim, hidden_dim, pos_embedding_dim,
-                 pos_hidden_dim, tag_to_index, token_nums, pad_index=0,
+                 pos_hidden_dim, tag_num, token_nums, pad_index=0,
                  batch_size=16):
         self.pos_embedding_dim = pos_embedding_dim
         self.pos_hidden_dim = pos_hidden_dim
         super(WordAndPosBasedTagger, self).__init__(embedding_dim, hidden_dim,
-                                                    token_nums, tag_to_index)
+                                                    tag_num, token_nums)
         self.pos_embeddings = self._init_pos_embeddings()
 
     def _init_pos_embeddings(self):
@@ -30,7 +30,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
 
     def _init_hidden2tag(self):
         hidden2tag = nn.Linear((self.hidden_dim + self.pos_hidden_dim) * 2,
-                               self.tagset_size)
+                               self.tag_num)
         return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
