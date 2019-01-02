@@ -44,7 +44,7 @@ class WordBasedTagger(nn.Module):
         return embeddings
 
     def _init_lstm(self):
-        lstm = nn.LSTM(self.embedding_dims[0], self.hidden_dims[0],
+        lstm = nn.LSTM(sum(self.embedding_dims), sum(self.hidden_dims),
                        bidirectional=True)
         return lstm.cuda() if self.use_cuda else lstm
 
