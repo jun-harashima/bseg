@@ -9,14 +9,14 @@ import random
 torch.manual_seed(1)
 
 
-class WordBasedTagger(nn.Module):
+class Model(nn.Module):
 
     EPOCH_NUM = 100
 
     # For simplicity, use the same pad_index (usually 0) for words and tags
     def __init__(self, embedding_dims, hidden_dims, tag_num, token_nums,
                  pad_index=0, batch_size=16):
-        super(WordBasedTagger, self).__init__()
+        super(Model, self).__init__()
         self.embedding_dims = embedding_dims
         self.hidden_dims = hidden_dims
         self.tag_num = tag_num
@@ -77,32 +77,31 @@ class WordBasedTagger(nn.Module):
         for epoch in range(1, self.EPOCH_NUM + 1):
             batches = self._split(train_set)
             random.shuffle(batches)
-            self._train(optimizer, batches, epoch, dev_set)
-
-    def _train(self, optimizer, batches, epoch, dev_set):
-        loss_sum = 0
-        for Y, X in batches:
-            self.zero_grad()
-            self.hidden = self._init_hidden()
-            X, lengths, _ = self._tensorize(X)
-            Y, lengths, _ = self._tensorize(Y)
-            Y_hat = self([X], lengths)
-            loss = self._calc_cross_entropy(Y_hat, Y)
-            loss.backward()
-            optimizer.step()
-            loss_sum += loss
-        print('epoch {:>3}\tloss {:6.2f}'.format(epoch, loss_sum))
-        if dev_set is not None and epoch % 10 == 0:
-            self.eval(dev_set)
+            loss_sum = 0
+            for Y, *Xs in batches:
+                self.zero_grad()
+                self.hidden = self._init_hidden()
+                for i in range(len(Xs)):
+                    Xs[i], lengths, _ = self._tensorize(Xs[i])
+                Y, _, _ = self._tensorize(Y)
+                Y_hat = self(Xs, lengths)
+                loss = self._calc_cross_entropy(Y_hat, Y)
+                loss.backward()
+                optimizer.step()
+                loss_sum += loss
+            print('epoch {:>3}\tloss {:6.2f}'.format(epoch, loss_sum))
+            if dev_set is not None and epoch % 10 == 0:
+                self.eval(dev_set)
 
     def test(self, test_set):
         results = []
         batches = self._split(test_set)
-        for _, X in batches:
+        for _, *Xs in batches:
             self.hidden = self._init_hidden()
-            X, lengths, indices = self._tensorize(X)
-            mask = (X > 0).long()
-            Y_hat = self([X], lengths)
+            for i in range(len(Xs)):
+                Xs[i], lengths, indices = self._tensorize(Xs[i])
+            mask = (Xs[0] > 0).long()
+            Y_hat = self(Xs, lengths)
             self._extend(results, Y_hat, mask, indices)
         return results
 

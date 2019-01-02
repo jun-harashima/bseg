@@ -3,7 +3,7 @@ from unittest.mock import patch
 import torch
 from torch.nn.parameter import Parameter
 from torch.nn.utils.rnn import PackedSequence
-from bseg.model.word_based_tagger import WordBasedTagger
+from bseg.model import Model
 from bseg.dataset.one_input_dataset import OneInputDataset
 
 
@@ -16,8 +16,8 @@ class TestModel(unittest.TestCase):
                               '切る': 4, 'ざっくり': 5, '葱': 6, 'は': 7,
                               '細く': 8, '刻む': 9}
 
-        self.model = WordBasedTagger([2], [4], len(self.tag_to_index),
-                                     [len(self.word_to_index)], batch_size=3)
+        self.model = Model([2], [4], len(self.tag_to_index),
+                           [len(self.word_to_index)], batch_size=3)
         self.embedding_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
                                                         [1, 2],  # for <UNK>
                                                         [3, 4],
@@ -60,8 +60,8 @@ class TestModel(unittest.TestCase):
         batches = self.model._split(dataset)
         self.assertEqual(batches[0], (self.Y, self.X1))
 
-        model = WordBasedTagger([2], [4], len(self.tag_to_index),
-                                [len(self.word_to_index)], batch_size=4)
+        model = Model([2], [4], len(self.tag_to_index),
+                      [len(self.word_to_index)], batch_size=4)
         batches = model._split(dataset)
         self.assertEqual(batches[0], (self.Y, self.X1))
 

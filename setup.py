@@ -31,7 +31,7 @@ setup(
     include_package_data=True,
     keywords='bseg',
     name='bseg',
-    packages=find_packages(include=['bseg', 'bseg.dataset', 'bseg.model']),
+    packages=find_packages(include=['bseg', 'bseg.dataset']),
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/jun-harashima/bseg',
