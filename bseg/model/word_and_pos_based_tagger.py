@@ -10,12 +10,10 @@ class WordAndPosBasedTagger(WordBasedTagger):
 
     def __init__(self, embedding_dim, hidden_dim, pos_embedding_dim,
                  pos_hidden_dim, tag_to_index, word_to_index, pos_to_index,
-                 tag_pad_index=0, word_pad_index=0, pos_pad_index=0,
-                 batch_size=16):
+                 pad_index=0, batch_size=16):
         self.pos_embedding_dim = pos_embedding_dim
         self.pos_hidden_dim = pos_hidden_dim
         self.posset_size = len(pos_to_index)
-        self.pos_pad_index = word_pad_index
         super(WordAndPosBasedTagger, self).__init__(embedding_dim, hidden_dim,
                                                     word_to_index,
                                                     tag_to_index)
@@ -23,7 +21,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
 
     def _init_pos_embeddings(self):
         pos_embeddings = nn.Embedding(self.posset_size, self.pos_embedding_dim,
-                                      self.pos_pad_index)
+                                      self.pad_index)
         return pos_embeddings.cuda() if self.use_cuda else pos_embeddings
 
     def _init_lstm(self):
@@ -56,9 +54,9 @@ class WordAndPosBasedTagger(WordBasedTagger):
         for X, X2, Y in batches:
             self.zero_grad()
             self.hidden = self._init_hidden()
-            X, lengths, _ = self._tensorize(X, self.word_pad_index)
-            X2, lengths, _ = self._tensorize(X2, self.pos_pad_index)
-            Y, lengths, _ = self._tensorize(Y, self.tag_pad_index)
+            X, lengths, _ = self._tensorize(X)
+            X2, lengths, _ = self._tensorize(X2)
+            Y, lengths, _ = self._tensorize(Y)
             Y_hat = self(X, X2, lengths)
             loss = self._calc_cross_entropy(Y_hat, Y)
             loss.backward()
@@ -73,8 +71,8 @@ class WordAndPosBasedTagger(WordBasedTagger):
         batches = self._split(test_set)
         for X, X2, _ in batches:
             self.hidden = self._init_hidden()
-            X, lengths, indices = self._tensorize(X, self.word_pad_index)
-            X2, _, _ = self._tensorize(X2, self.pos_pad_index)
+            X, lengths, indices = self._tensorize(X)
+            X2, _, _ = self._tensorize(X2)
             mask = (X > 0).long()
             Y_hat = self(X, X2, lengths)
             self._extend(results, Y_hat, mask, indices)
