@@ -8,27 +8,27 @@ torch.manual_seed(1)
 
 class WordAndPosBasedTagger(WordBasedTagger):
 
-    def __init__(self, embedding_dims, hidden_dim, pos_hidden_dim,
+    def __init__(self, embedding_dims, hidden_dims, pos_hidden_dim,
                  tag_num, token_nums, pad_index=0, batch_size=16):
-        self.pos_hidden_dim = pos_hidden_dim
-        super(WordAndPosBasedTagger, self).__init__(embedding_dims, hidden_dim,
-                                                    tag_num, token_nums)
+        super(WordAndPosBasedTagger, self).__init__(embedding_dims,
+                                                    hidden_dims, tag_num,
+                                                    token_nums)
 
     def _init_lstm(self):
         lstm = nn.LSTM(self.embedding_dims[0] + self.embedding_dims[1],
-                       self.hidden_dim + self.pos_hidden_dim,
+                       self.hidden_dims[0] + self.hidden_dims[1],
                        bidirectional=True)
         return lstm.cuda() if self.use_cuda else lstm
 
     def _init_hidden2tag(self):
-        hidden2tag = nn.Linear((self.hidden_dim + self.pos_hidden_dim) * 2,
+        hidden2tag = nn.Linear((self.hidden_dims[0] + self.hidden_dims[1]) * 2,
                                self.tag_num)
         return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
         zeros = torch.zeros(2, self.batch_size,
-                            (self.hidden_dim + self.pos_hidden_dim),
+                            (self.hidden_dims[0] + self.hidden_dims[1]),
                             device=self.device)
         return (zeros, zeros)
 

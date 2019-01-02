@@ -16,7 +16,7 @@ class TestModel(unittest.TestCase):
                               '切る': 4, 'ざっくり': 5, '葱': 6, 'は': 7,
                               '細く': 8, '刻む': 9}
 
-        self.model = WordBasedTagger([2], 4, len(self.tag_to_index),
+        self.model = WordBasedTagger([2], [4], len(self.tag_to_index),
                                      [len(self.word_to_index)], batch_size=3)
         self.embedding_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
                                                         [1, 2],  # for <UNK>
@@ -60,7 +60,7 @@ class TestModel(unittest.TestCase):
         batches = self.model._split(dataset)
         self.assertEqual(batches[0], (self.X1, self.Y))
 
-        model = WordBasedTagger([2], 4, len(self.tag_to_index),
+        model = WordBasedTagger([2], [4], len(self.tag_to_index),
                                 [len(self.word_to_index)], batch_size=4)
         batches = model._split(dataset)
         self.assertEqual(batches[0], (self.X1, self.Y))
