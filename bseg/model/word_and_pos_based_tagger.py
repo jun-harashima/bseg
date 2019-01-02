@@ -14,12 +14,6 @@ class WordAndPosBasedTagger(WordBasedTagger):
                                                     hidden_dims, tag_num,
                                                     token_nums)
 
-    def _init_lstm(self):
-        lstm = nn.LSTM(self.embedding_dims[0] + self.embedding_dims[1],
-                       self.hidden_dims[0] + self.hidden_dims[1],
-                       bidirectional=True)
-        return lstm.cuda() if self.use_cuda else lstm
-
     def _init_hidden2tag(self):
         hidden2tag = nn.Linear((self.hidden_dims[0] + self.hidden_dims[1]) * 2,
                                self.tag_num)
