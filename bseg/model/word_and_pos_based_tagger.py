@@ -32,7 +32,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
             X, lengths, indices = self._tensorize(X)
             X2, _, _ = self._tensorize(X2)
             mask = (X > 0).long()
-            Y_hat = self(X, X2, lengths)
+            Y_hat = self([X, X2], lengths)
             self._extend(results, Y_hat, mask, indices)
         return results
 
