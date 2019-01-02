@@ -13,4 +13,4 @@ class TwoInputDataset(OneInputDataset):
         if pos_to_index is None:
             poses = [pos for poses in poses_set for pos in poses]
             self.pos_to_index = self._make_index(poses)
-        self.X2 = self._degitize(poses_set, self.pos_to_index)
+        self.Xs.append(self._degitize(poses_set, self.pos_to_index))
