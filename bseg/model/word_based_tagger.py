@@ -14,10 +14,10 @@ class WordBasedTagger(nn.Module):
     EPOCH_NUM = 100
 
     # For simplicity, use the same pad_index (usually 0) for words and tags
-    def __init__(self, embedding_dim, hidden_dim, tag_num, token_nums,
+    def __init__(self, embedding_dims, hidden_dim, tag_num, token_nums,
                  pad_index=0, batch_size=16):
         super(WordBasedTagger, self).__init__()
-        self.embedding_dim = embedding_dim
+        self.embedding_dims = embedding_dims
         self.hidden_dim = hidden_dim
         self.tag_num = tag_num
         self.token_nums = token_nums
@@ -36,12 +36,16 @@ class WordBasedTagger(nn.Module):
         return torch.device('cuda' if self.use_cuda else 'cpu')
 
     def _init_embeddings(self):
-        embeddings = nn.Embedding(self.token_nums[0], self.embedding_dim,
-                                  self.pad_index)
-        return embeddings.cuda() if self.use_cuda else embeddings
+        embeddings = []
+        for num, dim in zip(self.token_nums, self.embedding_dims):
+            embedding = nn.Embedding(num, dim, self.pad_index)
+            embedding = embedding.cuda() if self.use_cuda else embedding
+            embeddings.append(embedding)
+        return embeddings
 
     def _init_lstm(self):
-        lstm = nn.LSTM(self.embedding_dim, self.hidden_dim, bidirectional=True)
+        lstm = nn.LSTM(self.embedding_dims[0], self.hidden_dim,
+                       bidirectional=True)
         return lstm.cuda() if self.use_cuda else lstm
 
     def _init_hidden2tag(self):
@@ -140,7 +144,7 @@ class WordBasedTagger(nn.Module):
         return Z
 
     def _embed(self, X):
-        return self.embeddings(X)
+        return self.embeddings[0](X)
 
     def _pack(self, X, lengths):
         return U.rnn.pack_padded_sequence(X, lengths, batch_first=True)
