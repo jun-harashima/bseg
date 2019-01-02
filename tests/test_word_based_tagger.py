@@ -60,7 +60,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(batches[0], (self.X1, self.Y))
 
         model = WordBasedTagger(2, 4, self.word_to_index, self.tag_to_index,
-                      batch_size=4)
+                                batch_size=4)
         batches = model._split(dataset)
         self.assertEqual(batches[0], (self.X1, self.Y))
 
