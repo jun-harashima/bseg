@@ -13,16 +13,16 @@ class WordBasedTagger(nn.Module):
 
     EPOCH_NUM = 100
 
+    # For simplicity, use the same pad_index (usually 0) for words and tags
     def __init__(self, embedding_dim, hidden_dim, word_to_index, tag_to_index,
-                 batch_size=16, word_pad_index=0, tag_pad_index=0):
+                 pad_index=0, batch_size=16):
         super(WordBasedTagger, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.vocab_size = len(word_to_index)
         self.tagset_size = len(tag_to_index)
         self.batch_size = batch_size
-        self.word_pad_index = word_pad_index
-        self.tag_pad_index = tag_pad_index
+        self.pad_index = pad_index
         self.use_cuda = self._init_use_cuda()
         self.device = self._init_device()
         self.embeddings = self._init_embeddings()
@@ -37,7 +37,7 @@ class WordBasedTagger(nn.Module):
 
     def _init_embeddings(self):
         embeddings = nn.Embedding(self.vocab_size, self.embedding_dim,
-                                  self.word_pad_index)
+                                  self.pad_index)
         return embeddings.cuda() if self.use_cuda else embeddings
 
     def _init_lstm(self):
@@ -83,8 +83,8 @@ class WordBasedTagger(nn.Module):
         for X, Y in batches:
             self.zero_grad()
             self.hidden = self._init_hidden()
-            X, lengths, _ = self._tensorize(X, self.word_pad_index)
-            Y, lengths, _ = self._tensorize(Y, self.tag_pad_index)
+            X, lengths, _ = self._tensorize(X)
+            Y, lengths, _ = self._tensorize(Y)
             Y_hat = self(X, lengths)
             loss = self._calc_cross_entropy(Y_hat, Y)
             loss.backward()
@@ -99,7 +99,7 @@ class WordBasedTagger(nn.Module):
         batches = self._split(test_set)
         for X, _ in batches:
             self.hidden = self._init_hidden()
-            X, lengths, indices = self._tensorize(X, self.word_pad_index)
+            X, lengths, indices = self._tensorize(X)
             mask = (X > 0).long()
             Y_hat = self(X, lengths)
             self._extend(results, Y_hat, mask, indices)
@@ -123,10 +123,10 @@ class WordBasedTagger(nn.Module):
         return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
                         zip(*[iter(dataset.Y)]*self.batch_size)))
 
-    def _tensorize(self, Z, pad_index):
+    def _tensorize(self, Z):
         Z, indices_before_sort = self._sort(Z)
         lengths_after_sort = [len(z) for z in Z]
-        Z = self._pad(Z, lengths_after_sort, pad_index)
+        Z = self._pad(Z, lengths_after_sort, self.pad_index)
         Z = torch.tensor(Z, device=self.device)
         return Z, lengths_after_sort, indices_before_sort
 
@@ -134,9 +134,9 @@ class WordBasedTagger(nn.Module):
         indices, Z = zip(*sorted(enumerate(Z), key=lambda z: -len(z[1])))
         return list(Z), list(indices)
 
-    def _pad(self, Z, lengths, pad_index):
+    def _pad(self, Z, lengths):
         for i, z in enumerate(Z):
-            Z[i] = z + [pad_index] * (max(lengths) - len(Z[i]))
+            Z[i] = z + [self.pad_index] * (max(lengths) - len(Z[i]))
         return Z
 
     def _embed(self, X):

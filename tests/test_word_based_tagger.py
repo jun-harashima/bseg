@@ -70,7 +70,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(indices, [2, 0, 1])
 
     def test__pad(self):
-        X3 = self.model._pad(self.X2, self.lengths, 0)
+        X3 = self.model._pad(self.X2, self.lengths)
         self.assertEqual(X3, self.X3)
 
     def test__embed(self):
