@@ -3,7 +3,7 @@ from bseg.model.word_based_tagger import WordBasedTagger
 from bseg.dataset.one_input_dataset import OneInputDataset
 
 
-EMBEDDING_DIM = 2
+EMBEDDING_DIMS = [2]
 HIDDEN_DIM = 4
 
 examples = [
@@ -13,7 +13,7 @@ examples = [
 ]
 dataset = OneInputDataset(examples)
 
-model = WordBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, len(dataset.tag_to_index),
+model = WordBasedTagger(EMBEDDING_DIMS, HIDDEN_DIM, len(dataset.tag_to_index),
                         [len(dataset.word_to_index)], batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'word_based_tagger.model')

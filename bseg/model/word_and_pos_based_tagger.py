@@ -8,22 +8,14 @@ torch.manual_seed(1)
 
 class WordAndPosBasedTagger(WordBasedTagger):
 
-    def __init__(self, embedding_dim, hidden_dim, pos_embedding_dim,
-                 pos_hidden_dim, tag_num, token_nums, pad_index=0,
-                 batch_size=16):
-        self.pos_embedding_dim = pos_embedding_dim
+    def __init__(self, embedding_dims, hidden_dim, pos_hidden_dim,
+                 tag_num, token_nums, pad_index=0, batch_size=16):
         self.pos_hidden_dim = pos_hidden_dim
-        super(WordAndPosBasedTagger, self).__init__(embedding_dim, hidden_dim,
+        super(WordAndPosBasedTagger, self).__init__(embedding_dims, hidden_dim,
                                                     tag_num, token_nums)
-        self.pos_embeddings = self._init_pos_embeddings()
-
-    def _init_pos_embeddings(self):
-        pos_embeddings = nn.Embedding(self.token_nums[1],
-                                      self.pos_embedding_dim, self.pad_index)
-        return pos_embeddings.cuda() if self.use_cuda else pos_embeddings
 
     def _init_lstm(self):
-        lstm = nn.LSTM(self.embedding_dim + self.pos_embedding_dim,
+        lstm = nn.LSTM(self.embedding_dims[0] + self.embedding_dims[1],
                        self.hidden_dim + self.pos_hidden_dim,
                        bidirectional=True)
         return lstm.cuda() if self.use_cuda else lstm
@@ -84,4 +76,4 @@ class WordAndPosBasedTagger(WordBasedTagger):
                         zip(*[iter(dataset.Y)]*self.batch_size)))
 
     def _pos_embed(self, X2):
-        return self.pos_embeddings(X2)
+        return self.embeddings[1](X2)
