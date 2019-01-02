@@ -54,7 +54,7 @@ class WordBasedTagger(nn.Module):
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        zeros = torch.zeros(2, self.batch_size, self.hidden_dims[0],
+        zeros = torch.zeros(2, self.batch_size, sum(self.hidden_dims),
                             device=self.device)
         return (zeros, zeros)
 
