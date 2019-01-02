@@ -14,12 +14,12 @@ class WordBasedTagger(nn.Module):
     EPOCH_NUM = 100
 
     # For simplicity, use the same pad_index (usually 0) for words and tags
-    def __init__(self, embedding_dim, hidden_dim, word_to_index, tag_to_index,
+    def __init__(self, embedding_dim, hidden_dim, token_nums, tag_to_index,
                  pad_index=0, batch_size=16):
         super(WordBasedTagger, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
-        self.vocab_size = len(word_to_index)
+        self.token_nums = token_nums
         self.tagset_size = len(tag_to_index)
         self.batch_size = batch_size
         self.pad_index = pad_index
@@ -36,7 +36,7 @@ class WordBasedTagger(nn.Module):
         return torch.device('cuda' if self.use_cuda else 'cpu')
 
     def _init_embeddings(self):
-        embeddings = nn.Embedding(self.vocab_size, self.embedding_dim,
+        embeddings = nn.Embedding(self.token_nums[0], self.embedding_dim,
                                   self.pad_index)
         return embeddings.cuda() if self.use_cuda else embeddings
 

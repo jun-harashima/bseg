@@ -13,7 +13,7 @@ examples = [
 ]
 dataset = OneInputDataset(examples)
 
-model = WordBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, dataset.word_to_index,
+model = WordBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, [len(dataset.word_to_index)],
                         dataset.tag_to_index, batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'word_based_tagger.model')
