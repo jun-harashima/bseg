@@ -7,13 +7,6 @@ torch.manual_seed(1)
 
 class WordAndPosBasedTagger(WordBasedTagger):
 
-    def forward(self, X, X2, lengths):
-        X = self._embed(X)
-        X2 = self._pos_embed(X2)
-        X = torch.cat((X, X2), 2)
-        X = self._forward(X, lengths)
-        return X
-
     def _train(self, optimizer, batches, epoch, dev_set):
         loss_sum = 0
         for X, X2, Y in batches:
@@ -22,7 +15,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
             X, lengths, _ = self._tensorize(X)
             X2, lengths, _ = self._tensorize(X2)
             Y, lengths, _ = self._tensorize(Y)
-            Y_hat = self(X, X2, lengths)
+            Y_hat = self([X, X2], lengths)
             loss = self._calc_cross_entropy(Y_hat, Y)
             loss.backward()
             optimizer.step()
@@ -49,6 +42,3 @@ class WordAndPosBasedTagger(WordBasedTagger):
         return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
                         zip(*[iter(dataset.X2)]*self.batch_size),
                         zip(*[iter(dataset.Y)]*self.batch_size)))
-
-    def _pos_embed(self, X2):
-        return self.embeddings[1](X2)

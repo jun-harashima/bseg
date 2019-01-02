@@ -58,12 +58,9 @@ class WordBasedTagger(nn.Module):
                             device=self.device)
         return (zeros, zeros)
 
-    def forward(self, X, lengths):
-        X = self._embed(X)
-        X = self._forward(X, lengths)
-        return X
-
-    def _forward(self, X, lengths):
+    def forward(self, Xs, lengths):
+        Xs = self._embed(Xs)
+        X = torch.cat(Xs, 2)
         X = self._pack(X, lengths)
         X, self.hidden = self._lstm(X)
         X, _ = self._unpack(X)
@@ -89,7 +86,7 @@ class WordBasedTagger(nn.Module):
             self.hidden = self._init_hidden()
             X, lengths, _ = self._tensorize(X)
             Y, lengths, _ = self._tensorize(Y)
-            Y_hat = self(X, lengths)
+            Y_hat = self([X], lengths)
             loss = self._calc_cross_entropy(Y_hat, Y)
             loss.backward()
             optimizer.step()
@@ -105,7 +102,7 @@ class WordBasedTagger(nn.Module):
             self.hidden = self._init_hidden()
             X, lengths, indices = self._tensorize(X)
             mask = (X > 0).long()
-            Y_hat = self(X, lengths)
+            Y_hat = self([X], lengths)
             self._extend(results, Y_hat, mask, indices)
         return results
 
@@ -143,8 +140,8 @@ class WordBasedTagger(nn.Module):
             Z[i] = z + [self.pad_index] * (max(lengths) - len(Z[i]))
         return Z
 
-    def _embed(self, X):
-        return self.embeddings[0](X)
+    def _embed(self, Xs):
+        return [self.embeddings[i](X) for i, X in enumerate(Xs)]
 
     def _pack(self, X, lengths):
         return U.rnn.pack_padded_sequence(X, lengths, batch_first=True)

@@ -77,8 +77,8 @@ class TestModel(unittest.TestCase):
     def test__embed(self):
         with patch.object(self.model.embeddings[0], 'weight',
                           self.embedding_weight):
-            X4 = self.model._embed(torch.tensor(self.X3))
-            self.assertTrue(torch.equal(X4, self.X4))
+            Xs = self.model._embed([torch.tensor(self.X3)])
+            self.assertTrue(torch.equal(Xs[0], self.X4))
 
     def test__pack(self):
         X5 = self.model._pack(self.X4, self.lengths)
