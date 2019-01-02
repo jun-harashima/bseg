@@ -14,11 +14,11 @@ class WordBasedTagger(nn.Module):
     EPOCH_NUM = 100
 
     # For simplicity, use the same pad_index (usually 0) for words and tags
-    def __init__(self, embedding_dims, hidden_dim, tag_num, token_nums,
+    def __init__(self, embedding_dims, hidden_dims, tag_num, token_nums,
                  pad_index=0, batch_size=16):
         super(WordBasedTagger, self).__init__()
         self.embedding_dims = embedding_dims
-        self.hidden_dim = hidden_dim
+        self.hidden_dims = hidden_dims
         self.tag_num = tag_num
         self.token_nums = token_nums
         self.batch_size = batch_size
@@ -44,17 +44,17 @@ class WordBasedTagger(nn.Module):
         return embeddings
 
     def _init_lstm(self):
-        lstm = nn.LSTM(self.embedding_dims[0], self.hidden_dim,
+        lstm = nn.LSTM(self.embedding_dims[0], self.hidden_dims[0],
                        bidirectional=True)
         return lstm.cuda() if self.use_cuda else lstm
 
     def _init_hidden2tag(self):
-        hidden2tag = nn.Linear(self.hidden_dim * 2, self.tag_num)
+        hidden2tag = nn.Linear(self.hidden_dims[0] * 2, self.tag_num)
         return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        zeros = torch.zeros(2, self.batch_size, self.hidden_dim,
+        zeros = torch.zeros(2, self.batch_size, self.hidden_dims[0],
                             device=self.device)
         return (zeros, zeros)
 
