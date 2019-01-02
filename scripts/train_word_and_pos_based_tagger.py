@@ -16,9 +16,10 @@ examples = [
 ]
 dataset = TwoInputDataset(examples)
 
+tag_num = len(dataset.tag_to_index)
 token_nums = [len(dataset.word_to_index), len(dataset.pos_to_index)]
 model = WordAndPosBasedTagger(EMBEDDING_DIM, HIDDEN_DIM, POS_EMBEDDING_DIM,
-                              POS_HIDDEN_DIM, dataset.tag_to_index, token_nums,
+                              POS_HIDDEN_DIM, tag_num, token_nums,
                               batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'word_and_pos_based_tagger.model')

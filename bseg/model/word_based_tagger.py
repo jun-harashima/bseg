@@ -14,13 +14,13 @@ class WordBasedTagger(nn.Module):
     EPOCH_NUM = 100
 
     # For simplicity, use the same pad_index (usually 0) for words and tags
-    def __init__(self, embedding_dim, hidden_dim, token_nums, tag_to_index,
+    def __init__(self, embedding_dim, hidden_dim, tag_num, token_nums,
                  pad_index=0, batch_size=16):
         super(WordBasedTagger, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
+        self.tag_num = tag_num
         self.token_nums = token_nums
-        self.tagset_size = len(tag_to_index)
         self.batch_size = batch_size
         self.pad_index = pad_index
         self.use_cuda = self._init_use_cuda()
@@ -45,7 +45,7 @@ class WordBasedTagger(nn.Module):
         return lstm.cuda() if self.use_cuda else lstm
 
     def _init_hidden2tag(self):
-        hidden2tag = nn.Linear(self.hidden_dim * 2, self.tagset_size)
+        hidden2tag = nn.Linear(self.hidden_dim * 2, self.tag_num)
         return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
@@ -68,7 +68,7 @@ class WordBasedTagger(nn.Module):
         # ignore them when computing our loss.
         X = self.hidden2tag(X)
         X = F.log_softmax(X, dim=1)
-        X = X.view(self.batch_size, lengths[0], self.tagset_size)
+        X = X.view(self.batch_size, lengths[0], self.tag_num)
         return X
 
     def train(self, train_set, dev_set=None):
@@ -156,7 +156,7 @@ class WordBasedTagger(nn.Module):
         #       [-2.06, -1.85, -1.70, ...]]     [-2.06, -1.85, -1.70, ...],
         #      [[-2.12, -1.91, -1.65, ...],     [-2.12, -1.91, -1.65, ...],
         #       [-2.16, -1.85, -1.66, ...]]])   [-2.16, -1.85, -1.66, ...]])
-        X = X.view(-1, self.tagset_size)
+        X = X.view(-1, self.tag_num)
         # Y = [[1, 2], [1, 0]] -> [1, 2, 1, 0]
         Y = Y.view(-1)
         # X = [-1.97, -1.70, -1.91, -2.16]
