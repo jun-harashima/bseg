@@ -126,7 +126,7 @@ class WordBasedTagger(nn.Module):
     def _tensorize(self, Z):
         Z, indices_before_sort = self._sort(Z)
         lengths_after_sort = [len(z) for z in Z]
-        Z = self._pad(Z, lengths_after_sort, self.pad_index)
+        Z = self._pad(Z, lengths_after_sort)
         Z = torch.tensor(Z, device=self.device)
         return Z, lengths_after_sort, indices_before_sort
 
