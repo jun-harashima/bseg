@@ -49,7 +49,7 @@ class WordBasedTagger(nn.Module):
         return lstm.cuda() if self.use_cuda else lstm
 
     def _init_hidden2tag(self):
-        hidden2tag = nn.Linear(self.hidden_dims[0] * 2, self.tag_num)
+        hidden2tag = nn.Linear(sum(self.hidden_dims) * 2, self.tag_num)
         return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
