@@ -7,12 +7,6 @@ torch.manual_seed(1)
 
 class WordAndPosBasedTagger(WordBasedTagger):
 
-    def __init__(self, embedding_dims, hidden_dims, tag_num, token_nums,
-                 pad_index=0, batch_size=16):
-        super(WordAndPosBasedTagger, self).__init__(embedding_dims,
-                                                    hidden_dims, tag_num,
-                                                    token_nums)
-
     def forward(self, X, X2, lengths):
         X = self._embed(X)
         X2 = self._pos_embed(X2)
