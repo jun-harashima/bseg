@@ -17,17 +17,17 @@ class TestModel(unittest.TestCase):
                               '細く': 8, '刻む': 9}
         self.model = WordBasedTagger(2, 4, len(self.tag_to_index),
                                      [len(self.word_to_index)], batch_size=3)
-        self.embeddings_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
-                                                         [1, 2],  # for <UNK>
-                                                         [3, 4],
-                                                         [5, 6],
-                                                         [7, 8],
-                                                         [9, 10],
-                                                         [11, 12],
-                                                         [13, 14],
-                                                         [15, 16],
-                                                         [17, 18]],
-                                                        dtype=torch.float))
+        self.embedding_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
+                                                        [1, 2],  # for <UNK>
+                                                        [3, 4],
+                                                        [5, 6],
+                                                        [7, 8],
+                                                        [9, 10],
+                                                        [11, 12],
+                                                        [13, 14],
+                                                        [15, 16],
+                                                        [17, 18]],
+                                                       dtype=torch.float))
         self.X1 = ([2, 3, 4], [5, 4], [6, 7, 8, 9])
         self.X2 = [[6, 7, 8, 9], [2, 3, 4], [5, 4]]
         self.X3 = [[6, 7, 8, 9], [2, 3, 4, 0], [5, 4, 0, 0]]
@@ -75,7 +75,7 @@ class TestModel(unittest.TestCase):
 
     def test__embed(self):
         with patch.object(self.model.embeddings, 'weight',
-                          self.embeddings_weight):
+                          self.embedding_weight):
             X4 = self.model._embed(torch.tensor(self.X3))
             self.assertTrue(torch.equal(X4, self.X4))
 
