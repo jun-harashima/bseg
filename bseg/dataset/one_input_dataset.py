@@ -13,7 +13,7 @@ class OneInputDataset():
         if word_to_index is None:
             words = [word for words in words_set for word in words]
             self.word_to_index = self._make_index(words)
-        self.X = self._degitize(words_set, self.word_to_index)
+        self.Xs = [self._degitize(words_set, self.word_to_index)]
 
     def _make_index(self, tokens):
         token_to_index = {'<PAD>': 0, '<UNK>': 1}

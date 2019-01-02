@@ -58,12 +58,12 @@ class TestModel(unittest.TestCase):
         ]
         dataset = OneInputDataset(examples)
         batches = self.model._split(dataset)
-        self.assertEqual(batches[0], (self.X1, self.Y))
+        self.assertEqual(batches[0], (self.Y, self.X1))
 
         model = WordBasedTagger([2], [4], len(self.tag_to_index),
                                 [len(self.word_to_index)], batch_size=4)
         batches = model._split(dataset)
-        self.assertEqual(batches[0], (self.X1, self.Y))
+        self.assertEqual(batches[0], (self.Y, self.X1))
 
     def test__sort(self):
         X2, indices = self.model._sort(self.X1)

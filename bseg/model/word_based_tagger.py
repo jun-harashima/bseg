@@ -81,7 +81,7 @@ class WordBasedTagger(nn.Module):
 
     def _train(self, optimizer, batches, epoch, dev_set):
         loss_sum = 0
-        for X, Y in batches:
+        for Y, X in batches:
             self.zero_grad()
             self.hidden = self._init_hidden()
             X, lengths, _ = self._tensorize(X)
@@ -98,7 +98,7 @@ class WordBasedTagger(nn.Module):
     def test(self, test_set):
         results = []
         batches = self._split(test_set)
-        for X, _ in batches:
+        for _, X in batches:
             self.hidden = self._init_hidden()
             X, lengths, indices = self._tensorize(X)
             mask = (X > 0).long()
@@ -119,10 +119,10 @@ class WordBasedTagger(nn.Module):
         print(ok / (ok + ng))
 
     def _split(self, dataset):
-        if len(dataset.X) < self.batch_size:
-            self.batch_size = len(dataset.X)
-        return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
-                        zip(*[iter(dataset.Y)]*self.batch_size)))
+        if len(dataset.Y) < self.batch_size:
+            self.batch_size = len(dataset.Y)
+        Zs = [dataset.Y] + dataset.Xs
+        return list(zip(*[zip(*[iter(Z)]*self.batch_size) for Z in Zs]))
 
     def _tensorize(self, Z):
         Z, indices_before_sort = self._sort(Z)

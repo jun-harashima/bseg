@@ -9,7 +9,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
 
     def _train(self, optimizer, batches, epoch, dev_set):
         loss_sum = 0
-        for X, X2, Y in batches:
+        for Y, X, X2 in batches:
             self.zero_grad()
             self.hidden = self._init_hidden()
             X, lengths, _ = self._tensorize(X)
@@ -27,7 +27,7 @@ class WordAndPosBasedTagger(WordBasedTagger):
     def test(self, test_set):
         results = []
         batches = self._split(test_set)
-        for X, X2, _ in batches:
+        for _, X, X2 in batches:
             self.hidden = self._init_hidden()
             X, lengths, indices = self._tensorize(X)
             X2, _, _ = self._tensorize(X2)
@@ -35,10 +35,3 @@ class WordAndPosBasedTagger(WordBasedTagger):
             Y_hat = self([X, X2], lengths)
             self._extend(results, Y_hat, mask, indices)
         return results
-
-    def _split(self, dataset):
-        if len(dataset.X) < self.batch_size:
-            self.batch_size = len(dataset.X)
-        return list(zip(zip(*[iter(dataset.X)]*self.batch_size),
-                        zip(*[iter(dataset.X2)]*self.batch_size),
-                        zip(*[iter(dataset.Y)]*self.batch_size)))
