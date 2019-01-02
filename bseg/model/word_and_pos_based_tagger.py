@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 from bseg.model.word_based_tagger import WordBasedTagger
 
 
@@ -13,11 +12,6 @@ class WordAndPosBasedTagger(WordBasedTagger):
         super(WordAndPosBasedTagger, self).__init__(embedding_dims,
                                                     hidden_dims, tag_num,
                                                     token_nums)
-
-    def _init_hidden2tag(self):
-        hidden2tag = nn.Linear((self.hidden_dims[0] + self.hidden_dims[1]) * 2,
-                               self.tag_num)
-        return hidden2tag.cuda() if self.use_cuda else hidden2tag
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
