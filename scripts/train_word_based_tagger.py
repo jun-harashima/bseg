@@ -4,7 +4,7 @@ from bseg.dataset.one_input_dataset import OneInputDataset
 
 
 EMBEDDING_DIMS = [2]
-HIDDEN_DIMs = [4]
+HIDDEN_DIMS = [4]
 
 examples = [
     (('名詞', '助詞', '動詞'), ('人参', 'を', '切る')),

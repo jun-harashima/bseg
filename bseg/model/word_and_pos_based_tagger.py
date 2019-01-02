@@ -8,8 +8,8 @@ torch.manual_seed(1)
 
 class WordAndPosBasedTagger(WordBasedTagger):
 
-    def __init__(self, embedding_dims, hidden_dims, pos_hidden_dim,
-                 tag_num, token_nums, pad_index=0, batch_size=16):
+    def __init__(self, embedding_dims, hidden_dims, tag_num, token_nums,
+                 pad_index=0, batch_size=16):
         super(WordAndPosBasedTagger, self).__init__(embedding_dims,
                                                     hidden_dims, tag_num,
                                                     token_nums)
