@@ -6,26 +6,27 @@
 
 class Dataset():
 
-    def __init__(self, examples, y_to_index=None, x_to_index=None):
-        Y_set = [example['Y'] for example in examples]
-        self.y_to_index = y_to_index
-        if y_to_index is None:
-            ys = [y for Y in Y_set for y in Y]
-            self.y_to_index = self._make_index(ys)
-        self.Y = self._degitize(Y_set, self.y_to_index)
-
+    def __init__(self, examples, x_to_index=None, y_to_index=None):
         self.x_to_index = x_to_index
+        X_sets = [[example['Xs'][i] for example in examples]
+                  for i in range(len(examples[0]['Xs']))]
         if x_to_index is None:
             self.x_to_index = []
             for i in range(len(examples[0]['Xs'])):
-                X_set = [example['Xs'][i] for example in examples]
-                xs = [x for X in X_set for x in X]
+                xs = [x for X in X_sets[i] for x in X]
                 self.x_to_index.append(self._make_index(xs))
+
+        self.y_to_index = y_to_index
+        Y_set = [example['Y'] for example in examples]
+        if y_to_index is None:
+            ys = [y for Y in Y_set for y in Y]
+            self.y_to_index = self._make_index(ys)
 
         self.Xs = []
         for i in range(len(examples[0]['Xs'])):
-            X_set = [example['Xs'][i] for example in examples]
-            self.Xs.append(self._degitize(X_set, self.x_to_index[i]))
+            self.Xs.append(self._degitize(X_sets[i], self.x_to_index[i]))
+
+        self.Y = self._degitize(Y_set, self.y_to_index)
 
     def _make_index(self, zs):
         z_to_index = {'<PAD>': 0, '<UNK>': 1}
