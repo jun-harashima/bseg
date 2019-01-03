@@ -1,12 +1,12 @@
 class OneInputDataset():
 
-    def __init__(self, examples, tag_to_index=None, word_to_index=None):
+    def __init__(self, examples, y_to_index=None, word_to_index=None):
         tags_set = [example['Y'] for example in examples]
-        self.tag_to_index = tag_to_index
-        if tag_to_index is None:
+        self.y_to_index = y_to_index
+        if y_to_index is None:
             tags = [tag for tags in tags_set for tag in tags]
-            self.tag_to_index = self._make_index(tags)
-        self.Y = self._degitize(tags_set, self.tag_to_index)
+            self.y_to_index = self._make_index(tags)
+        self.Y = self._degitize(tags_set, self.y_to_index)
 
         words_set = [example['Xs'][0] for example in examples]
         self.word_to_index = word_to_index
