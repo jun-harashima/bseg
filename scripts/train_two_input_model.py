@@ -1,6 +1,6 @@
 import torch
 from bseg.model import Model
-from bseg.dataset.one_input_dataset import OneInputDataset
+from bseg.dataset import Dataset
 
 
 EMBEDDING_DIMS = [2, 2]
@@ -17,15 +17,16 @@ examples = [
             ['名詞', '助詞', '形容詞', '動詞']],
      'Y': ['B-S', 'B-I', 'B-M', 'B-P']}
 ]
-dataset = OneInputDataset(examples)
+dataset = Dataset(examples)
 
-tag_num = len(dataset.y_to_index)
-token_nums = [len(dataset.x_to_index[0]), len(dataset.x_to_index[1])]
-model = Model(EMBEDDING_DIMS, HIDDEN_DIMS, tag_num, token_nums, batch_size=3)
+y_set_size = len(dataset.y_to_index)
+x_set_sizes = [len(dataset.x_to_index[0]), len(dataset.x_to_index[1])]
+model = Model(EMBEDDING_DIMS, HIDDEN_DIMS, y_set_size, x_set_sizes,
+              batch_size=3)
 model.train(dataset)
-torch.save(model.state_dict(), 'word_and_pos_based_tagger.model')
+torch.save(model.state_dict(), 'two_input.model')
 
-model.load_state_dict(torch.load('word_and_pos_based_tagger.model'))
+model.load_state_dict(torch.load('two_input.model'))
 examples = [
     {'Xs': [['葱', 'を', '切る'],
             ['名詞', '助詞', '動詞']],
@@ -37,6 +38,6 @@ examples = [
             ['名詞', '助詞', '形容詞', '動詞']],
      'Y': ['B-S', 'B-I', 'B-M', 'B-P']}
 ]
-dataset = OneInputDataset(examples)
+dataset = Dataset(examples)
 results = model.test(dataset)
 print(results)
