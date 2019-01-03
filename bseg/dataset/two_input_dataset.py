@@ -5,8 +5,8 @@ class TwoInputDataset(OneInputDataset):
 
     def __init__(self, examples, y_to_index=None, word_to_index=None,
                  pos_to_index=None):
-        super(TwoInputDataset, self).__init__(examples, y_to_index=None,
-                                              word_to_index=None)
+        super(TwoInputDataset, self).__init__(examples, y_to_index,
+                                              word_to_index)
 
         poses_set = [example['Xs'][1] for example in examples]
         self.pos_to_index = pos_to_index
