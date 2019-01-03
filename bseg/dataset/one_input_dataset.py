@@ -8,12 +8,18 @@ class OneInputDataset():
             self.y_to_index = self._make_index(tags)
         self.Y = self._degitize(tags_set, self.y_to_index)
 
-        words_set = [example['Xs'][0] for example in examples]
         self.x_to_index = x_to_index
         if x_to_index is None:
-            words = [word for words in words_set for word in words]
-            self.x_to_index = [self._make_index(words)]
-        self.Xs = [self._degitize(words_set, self.x_to_index[0])]
+            self.x_to_index = []
+            for i in range(len(examples[0]['Xs'])):
+                tokens_set = [example['Xs'][i] for example in examples]
+                tokens = [token for tokens in tokens_set for token in tokens]
+                self.x_to_index.append(self._make_index(tokens))
+
+        self.Xs = []
+        for i in range(len(examples[0]['Xs'])):
+            tokens_set = [example['Xs'][i] for example in examples]
+            self.Xs.append(self._degitize(tokens_set, self.x_to_index[i]))
 
     def _make_index(self, tokens):
         token_to_index = {'<PAD>': 0, '<UNK>': 1}

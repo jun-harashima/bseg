@@ -1,6 +1,6 @@
 import torch
 from bseg.model import Model
-from bseg.dataset.two_input_dataset import TwoInputDataset
+from bseg.dataset.one_input_dataset import OneInputDataset
 
 
 EMBEDDING_DIMS = [2, 2]
@@ -17,7 +17,7 @@ examples = [
             ['名詞', '助詞', '形容詞', '動詞']],
      'Y': ['B-S', 'B-I', 'B-M', 'B-P']}
 ]
-dataset = TwoInputDataset(examples)
+dataset = OneInputDataset(examples)
 
 tag_num = len(dataset.y_to_index)
 token_nums = [len(dataset.x_to_index[0]), len(dataset.x_to_index[1])]
@@ -37,6 +37,6 @@ examples = [
             ['名詞', '助詞', '形容詞', '動詞']],
      'Y': ['B-S', 'B-I', 'B-M', 'B-P']}
 ]
-dataset = TwoInputDataset(examples)
+dataset = OneInputDataset(examples)
 results = model.test(dataset)
 print(results)
