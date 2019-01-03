@@ -3,9 +3,9 @@ from bseg.dataset.one_input_dataset import OneInputDataset
 
 class TwoInputDataset(OneInputDataset):
 
-    def __init__(self, examples, tag_to_index=None, word_to_index=None,
+    def __init__(self, examples, y_to_index=None, word_to_index=None,
                  pos_to_index=None):
-        super(TwoInputDataset, self).__init__(examples, tag_to_index=None,
+        super(TwoInputDataset, self).__init__(examples, y_to_index=None,
                                               word_to_index=None)
 
         poses_set = [example['Xs'][1] for example in examples]

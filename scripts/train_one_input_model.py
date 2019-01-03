@@ -16,7 +16,7 @@ examples = [
 ]
 dataset = OneInputDataset(examples)
 
-model = Model(EMBEDDING_DIMS, HIDDEN_DIMS, len(dataset.tag_to_index),
+model = Model(EMBEDDING_DIMS, HIDDEN_DIMS, len(dataset.y_to_index),
               [len(dataset.word_to_index)], batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'word_based_tagger.model')
