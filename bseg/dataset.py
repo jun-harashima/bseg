@@ -1,4 +1,4 @@
-class OneInputDataset():
+class Dataset():
 
     def __init__(self, examples, y_to_index=None, x_to_index=None):
         tags_set = [example['Y'] for example in examples]
