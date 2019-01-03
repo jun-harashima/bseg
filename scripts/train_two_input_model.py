@@ -19,9 +19,9 @@ examples = [
 ]
 dataset = Dataset(examples)
 
-y_set_size = len(dataset.y_to_index)
 x_set_sizes = [len(dataset.x_to_index[0]), len(dataset.x_to_index[1])]
-model = Model(EMBEDDING_DIMS, HIDDEN_DIMS, y_set_size, x_set_sizes,
+y_set_size = len(dataset.y_to_index)
+model = Model(EMBEDDING_DIMS, HIDDEN_DIMS, x_set_sizes, y_set_size,
               batch_size=3)
 model.train(dataset)
 torch.save(model.state_dict(), 'two_input.model')

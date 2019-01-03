@@ -14,13 +14,13 @@ class Model(nn.Module):
     EPOCH_NUM = 100
 
     # For simplicity, use the same pad_index for Xs[0], Xs[1], ..., and Y
-    def __init__(self, embedding_dims, hidden_dims, y_set_size, x_set_sizes,
+    def __init__(self, embedding_dims, hidden_dims, x_set_sizes, y_set_size,
                  pad_index=0, batch_size=16):
         super(Model, self).__init__()
         self.embedding_dims = embedding_dims
         self.hidden_dims = hidden_dims
-        self.y_set_size = y_set_size
         self.x_set_sizes = x_set_sizes
+        self.y_set_size = y_set_size
         self.batch_size = batch_size
         self.pad_index = pad_index
         self.use_cuda = self._init_use_cuda()
@@ -78,7 +78,7 @@ class Model(nn.Module):
             batches = self._split(train_set)
             random.shuffle(batches)
             loss_sum = 0
-            for Y, *Xs in batches:
+            for *Xs, Y in batches:
                 self.zero_grad()
                 self.hidden = self._init_hidden()
                 for i in range(len(Xs)):
@@ -96,7 +96,7 @@ class Model(nn.Module):
     def test(self, test_set):
         results = []
         batches = self._split(test_set)
-        for _, *Xs in batches:
+        for *Xs, _ in batches:
             self.hidden = self._init_hidden()
             for i in range(len(Xs)):
                 Xs[i], lengths, indices = self._tensorize(Xs[i])
@@ -120,7 +120,7 @@ class Model(nn.Module):
     def _split(self, dataset):
         if len(dataset.Y) < self.batch_size:
             self.batch_size = len(dataset.Y)
-        Zs = [dataset.Y] + dataset.Xs
+        Zs = dataset.Xs + [dataset.Y]
         return list(zip(*[zip(*[iter(Z)]*self.batch_size) for Z in Zs]))
 
     def _tensorize(self, Z):

@@ -16,8 +16,8 @@ class TestModel(unittest.TestCase):
                             '切る': 4, 'ざっくり': 5, '葱': 6, 'は': 7,
                             '細く': 8, '刻む': 9}]
 
-        self.model = Model([2], [4], len(self.y_to_index),
-                           [len(self.x_to_index[0])], batch_size=3)
+        self.model = Model([2], [4], [len(self.x_to_index[0])],
+                           len(self.y_to_index), batch_size=3)
         self.embedding_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
                                                         [1, 2],  # for <UNK>
                                                         [3, 4],
@@ -61,12 +61,12 @@ class TestModel(unittest.TestCase):
         ]
         dataset = Dataset(examples)
         batches = self.model._split(dataset)
-        self.assertEqual(batches[0], (self.Y, self.X1))
+        self.assertEqual(batches[0], (self.X1, self.Y))
 
-        model = Model([2], [4], len(self.y_to_index),
-                      [len(self.x_to_index[0])], batch_size=4)
+        model = Model([2], [4], [len(self.x_to_index[0])],
+                      len(self.y_to_index), batch_size=4)
         batches = model._split(dataset)
-        self.assertEqual(batches[0], (self.Y, self.X1))
+        self.assertEqual(batches[0], (self.X1, self.Y))
 
     def test__sort(self):
         X2, indices = self.model._sort(self.X1)
