@@ -1,41 +1,47 @@
+# z: a token (e.g., word, pos, and tag).
+# Z: a sequence of tokens.
+# Z_set: a set of sequences.
+# zs: a concatnation of sets.
+
+
 class Dataset():
 
     def __init__(self, examples, y_to_index=None, x_to_index=None):
-        tags_set = [example['Y'] for example in examples]
+        Y_set = [example['Y'] for example in examples]
         self.y_to_index = y_to_index
         if y_to_index is None:
-            tags = [tag for tags in tags_set for tag in tags]
-            self.y_to_index = self._make_index(tags)
-        self.Y = self._degitize(tags_set, self.y_to_index)
+            ys = [y for Y in Y_set for y in Y]
+            self.y_to_index = self._make_index(ys)
+        self.Y = self._degitize(Y_set, self.y_to_index)
 
         self.x_to_index = x_to_index
         if x_to_index is None:
             self.x_to_index = []
             for i in range(len(examples[0]['Xs'])):
-                tokens_set = [example['Xs'][i] for example in examples]
-                tokens = [token for tokens in tokens_set for token in tokens]
-                self.x_to_index.append(self._make_index(tokens))
+                X_set = [example['Xs'][i] for example in examples]
+                xs = [x for X in X_set for x in X]
+                self.x_to_index.append(self._make_index(xs))
 
         self.Xs = []
         for i in range(len(examples[0]['Xs'])):
-            tokens_set = [example['Xs'][i] for example in examples]
-            self.Xs.append(self._degitize(tokens_set, self.x_to_index[i]))
+            X_set = [example['Xs'][i] for example in examples]
+            self.Xs.append(self._degitize(X_set, self.x_to_index[i]))
 
-    def _make_index(self, tokens):
-        token_to_index = {'<PAD>': 0, '<UNK>': 1}
-        for token in tokens:
-            if token not in token_to_index:
-                token_to_index[token] = len(token_to_index)
-        return token_to_index
+    def _make_index(self, zs):
+        z_to_index = {'<PAD>': 0, '<UNK>': 1}
+        for z in zs:
+            if z not in z_to_index:
+                z_to_index[z] = len(z_to_index)
+        return z_to_index
 
-    def _get_index(self, token, token_to_index):
-        if token not in token_to_index:
-            return token_to_index['<UNK>']
-        return token_to_index[token]
+    def _get_index(self, z, z_to_index):
+        if z not in z_to_index:
+            return z_to_index['<UNK>']
+        return z_to_index[z]
 
-    def _degitize(self, tokens_set, token_to_index):
+    def _degitize(self, Z_set, z_to_index):
         Z = []
-        for tokens in tokens_set:
-            _Z = [self._get_index(token, token_to_index) for token in tokens]
+        for _Z in Z_set:
+            _Z = [self._get_index(z, z_to_index) for z in _Z]
             Z.append(_Z)
         return Z
