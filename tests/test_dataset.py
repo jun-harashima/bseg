@@ -1,15 +1,15 @@
 import unittest
-from bseg.dataset.one_input_dataset import OneInputDataset
+from bseg.dataset import Dataset
 
 
-class TestOneInputDataset(unittest.TestCase):
+class TestDataset(unittest.TestCase):
 
     def test__init__(self):
         examples = [{'Xs': [['人参', 'を', '切る']],
                      'Y': ['名詞', '助詞', '動詞']},
                     {'Xs': [['葱', 'を', '切る']],
                      'Y': ['名詞', '助詞', '動詞']}]
-        dataset = OneInputDataset(examples)
+        dataset = Dataset(examples)
         self.assertEqual(dataset.x_to_index,
                          [{'<PAD>': 0, '<UNK>': 1, '人参': 2, 'を': 3,
                            '切る': 4, '葱': 5}])
