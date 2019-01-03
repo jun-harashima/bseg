@@ -13,21 +13,21 @@ class Model(nn.Module):
 
     EPOCH_NUM = 100
 
-    # For simplicity, use the same pad_index (usually 0) for words and tags
-    def __init__(self, embedding_dims, hidden_dims, tag_num, token_nums,
+    # For simplicity, use the same pad_index for Xs[0], Xs[1], ..., and Y
+    def __init__(self, embedding_dims, hidden_dims, y_set_size, x_set_sizes,
                  pad_index=0, batch_size=16):
         super(Model, self).__init__()
         self.embedding_dims = embedding_dims
         self.hidden_dims = hidden_dims
-        self.tag_num = tag_num
-        self.token_nums = token_nums
+        self.y_set_size = y_set_size
+        self.x_set_sizes = x_set_sizes
         self.batch_size = batch_size
         self.pad_index = pad_index
         self.use_cuda = self._init_use_cuda()
         self.device = self._init_device()
         self.embeddings = self._init_embeddings()
         self.lstm = self._init_lstm()
-        self.hidden2tag = self._init_hidden2tag()
+        self.hidden2y = self._init_hidden2y()
 
     def _init_use_cuda(self):
         return torch.cuda.is_available()
@@ -37,8 +37,8 @@ class Model(nn.Module):
 
     def _init_embeddings(self):
         embeddings = []
-        for num, dim in zip(self.token_nums, self.embedding_dims):
-            embedding = nn.Embedding(num, dim, self.pad_index)
+        for size, dim in zip(self.x_set_sizes, self.embedding_dims):
+            embedding = nn.Embedding(size, dim, self.pad_index)
             embedding = embedding.cuda() if self.use_cuda else embedding
             embeddings.append(embedding)
         return embeddings
@@ -48,9 +48,9 @@ class Model(nn.Module):
                        bidirectional=True)
         return lstm.cuda() if self.use_cuda else lstm
 
-    def _init_hidden2tag(self):
-        hidden2tag = nn.Linear(sum(self.hidden_dims) * 2, self.tag_num)
-        return hidden2tag.cuda() if self.use_cuda else hidden2tag
+    def _init_hidden2y(self):
+        hidden2y = nn.Linear(sum(self.hidden_dims) * 2, self.y_set_size)
+        return hidden2y.cuda() if self.use_cuda else hidden2y
 
     def _init_hidden(self):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
@@ -65,11 +65,11 @@ class Model(nn.Module):
         X, self.hidden = self._lstm(X)
         X, _ = self._unpack(X)
         X = X.contiguous().view(-1, X.shape[2])
-        # Note that hidden2tag returns values also for padded elements. We
+        # Note that hidden2y returns values also for padded elements. We
         # ignore them when computing our loss.
-        X = self.hidden2tag(X)
+        X = self.hidden2y(X)
         X = F.log_softmax(X, dim=1)
-        X = X.view(self.batch_size, lengths[0], self.tag_num)
+        X = X.view(self.batch_size, lengths[0], self.y_set_size)
         return X
 
     def train(self, train_set, dev_set=None):
@@ -156,7 +156,7 @@ class Model(nn.Module):
         #       [-2.06, -1.85, -1.70, ...]]     [-2.06, -1.85, -1.70, ...],
         #      [[-2.12, -1.91, -1.65, ...],     [-2.12, -1.91, -1.65, ...],
         #       [-2.16, -1.85, -1.66, ...]]])   [-2.16, -1.85, -1.66, ...]])
-        X = X.view(-1, self.tag_num)
+        X = X.view(-1, self.y_set_size)
         # Y = [[1, 2], [1, 0]] -> [1, 2, 1, 0]
         Y = Y.view(-1)
         # X = [-1.97, -1.70, -1.91, -2.16]
@@ -165,10 +165,10 @@ class Model(nn.Module):
         mask = (Y > 0).float()
         # X = [-1.97, -1.70, -1.91, -0.00]
         X = X * mask
-        # token_num = 3
-        token_num = int(torch.sum(mask))
+        # x_num = 3
+        x_num = int(torch.sum(mask))
         # -1 * (-1.97 + -1.70 + -1.91 + -0.00) / 3
-        return -torch.sum(X) / token_num
+        return -torch.sum(X) / x_num
 
     def _extend(self, results, Y_hat, mask, indices):
         _, __results = Y_hat.max(-1)
