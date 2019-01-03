@@ -10,9 +10,9 @@ class TestOneInputDataset(unittest.TestCase):
                     {'Xs': [['葱', 'を', '切る']],
                      'Y': ['名詞', '助詞', '動詞']}]
         dataset = OneInputDataset(examples)
-        self.assertEqual(dataset.word_to_index,
-                         {'<PAD>': 0, '<UNK>': 1, '人参': 2, 'を': 3,
-                         '切る': 4, '葱': 5})
+        self.assertEqual(dataset.x_to_index,
+                         [{'<PAD>': 0, '<UNK>': 1, '人参': 2, 'を': 3,
+                         '切る': 4, '葱': 5}])
         self.assertEqual(dataset.y_to_index,
                          {'<PAD>': 0, '<UNK>': 1, '名詞': 2, '助詞': 3,
                           '動詞': 4})

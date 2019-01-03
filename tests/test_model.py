@@ -12,12 +12,12 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.y_to_index = {'<PAD>': 0, '<UNK>': 1, '名詞': 2, '助詞': 3,
                            '動詞': 4, '副詞': 5, '形容詞': 6}
-        self.word_to_index = {'<PAD>': 0, '<UNK>': 1, '人参': 2, 'を': 3,
-                              '切る': 4, 'ざっくり': 5, '葱': 6, 'は': 7,
-                              '細く': 8, '刻む': 9}
+        self.x_to_index = [{'<PAD>': 0, '<UNK>': 1, '人参': 2, 'を': 3,
+                            '切る': 4, 'ざっくり': 5, '葱': 6, 'は': 7,
+                            '細く': 8, '刻む': 9}]
 
         self.model = Model([2], [4], len(self.y_to_index),
-                           [len(self.word_to_index)], batch_size=3)
+                           [len(self.x_to_index[0])], batch_size=3)
         self.embedding_weight = Parameter(torch.tensor([[0, 0],  # for <PAD>
                                                         [1, 2],  # for <UNK>
                                                         [3, 4],
@@ -64,7 +64,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(batches[0], (self.Y, self.X1))
 
         model = Model([2], [4], len(self.y_to_index),
-                      [len(self.word_to_index)], batch_size=4)
+                      [len(self.x_to_index[0])], batch_size=4)
         batches = model._split(dataset)
         self.assertEqual(batches[0], (self.Y, self.X1))
 
