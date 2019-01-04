@@ -1,6 +1,6 @@
 import torch
-from bseg.model import Model
-from bseg.dataset import Dataset
+from pttagger.model import Model
+from pttagger.dataset import Dataset
 
 
 EMBEDDING_DIMS = [2, 2]
